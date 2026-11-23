@@ -1,0 +1,38 @@
+meta {
+  name: List brands with products on the site
+  type: http
+  seq: 3
+  tags: [
+    Brand
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/brand/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": null,
+    "in_stock": false,
+    "site_variation": null,
+    "country": null,
+    "sort": "name_asc",
+    "page": 0,
+    "per_page": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Brands that have products on the site by the search index, page by page (`meta.pager`), with `product_count` — the same selection as `stock/product/search` and `stock/facet/list`: restrictions of the site, the delivery country of `site_variation` (or `country`), `in_stock`, with `rubric_id` — products of the rubric with its subrubrics. So `product_count` equals `meta.pager.total` of `stock/product/search` with `brand_ids: [id]` and the same fields. Brands closed for the site by the platform and brands hidden by the partner are left out (hidden ones — `brand/list-denied`); a brand without products — `brand/search`. `sort`: by name (default) or by the number of products. A rubric not in the site tree gives 422 `rubric-not-in-tree`.
+}

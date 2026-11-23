@@ -1,0 +1,32 @@
+meta {
+  name: Cancel an order
+  type: http
+  seq: 2
+  tags: [
+    Order
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/order/cancel
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "order_id": {{orderId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Cancels an order placed by the partner. Canceling a canceled order changes nothing and returns it (200). Orders of customers cannot be canceled (409). A sent or delivered order (status `sent`, `sent_msk` or `delivered`) cannot be canceled: 409 `/api/problems/order-shipped`, a return is arranged by 4Partners support. A canceled order keeps `is_paid`, `deposit_paid` and the prices of its items, `total_price` and `delivery_price` become `0.00`. The charged deposit is not returned automatically: an operator returns it, the returned amount is in `deposit_refunded`.
+}

@@ -1,0 +1,31 @@
+meta {
+  name: Cancel my order
+  type: http
+  seq: 4
+  tags: [
+    Customer_Order
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-order/cancel
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "order_id": {{customerOrderId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.error: eq false
+  res.body.data.status: eq canceled
+  res.body.data.payment_url: isNull
+}
+
+docs {
+  Cancels an unpaid order of the customer, as the cancel button of the account on the site: all items are canceled, the order becomes `canceled`, `total_price` and `delivery_price` become `0.00`, `payment_url` becomes `null`. Returns the card of `customer-order/show`. A paid order is canceled and refunded only by the shop: 409 `/api/problems/order-already-paid`. Canceling a canceled order changes nothing and returns it (200). An order of another customer gives 404.
+}

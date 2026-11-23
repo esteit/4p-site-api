@@ -1,0 +1,34 @@
+meta {
+  name: List products by ids
+  type: http
+  seq: 2
+  tags: [
+    Stock
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/stock/product/batch-show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_ids": [
+      {{productId}}
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Up to 100 products in the order of `product_ids`, in the format of `stock/product/show`; a repeated id is returned once, an id that is not a positive integer gives 422. Products not in the site tree and unknown ids are left out, products closed for the site come with `closed: true` and no `variations`: take such products off sale.
+}

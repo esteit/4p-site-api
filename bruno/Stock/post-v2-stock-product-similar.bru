@@ -1,0 +1,32 @@
+meta {
+  name: Show similar products
+  type: http
+  seq: 7
+  tags: [
+    Stock
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/stock/product/similar
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_id": {{productId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  The «you may also like» block of a product card, as on the storefront: up to 12 products of the same main rubric in stock, in a random order that changes every few hours, and `brand_rubric` — the brand of the product in its rubric for a «more of this brand» link (`stock/product/search` with `rubric_ids` and `brand_ids`). A product not in the site tree gives 404.
+}

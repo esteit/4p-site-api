@@ -1,0 +1,34 @@
+meta {
+  name: List prices and stock
+  type: http
+  seq: 3
+  tags: [
+    Stock
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/stock/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_ids": [
+      {{productId}}
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Current prices and stock of up to 100 products (`product_ids`, all variations) or 500 variations (`product_variation_ids`) — a light answer for frequent polling instead of `stock/product/batch-show`. The same variations, prices, stock and `unavailable_reason` as `variations` of `stock/product/show` for the same `site_variation` and `country`: a product closed for the site is left out, and so is a requested variation that the card does not show. The answer keeps the order of the request: products of `product_ids` first, then the products of `product_variation_ids` in the order of their first variation; variations of a whole product — in the order of the card, requested variations — in the order of the request; a repeated id is returned once. Prices are decimal strings with 2 digits after the point, `null` without an offer; `old_price` — only when above `price`, as in the card. `with_partner_price` adds `partner_price` — the purchase price of the partner at 4Partners.
+}

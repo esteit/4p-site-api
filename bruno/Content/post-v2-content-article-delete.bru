@@ -1,0 +1,29 @@
+meta {
+  name: Delete an article
+  type: http
+  seq: 9
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/article/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "article_id": {{articleId}},
+    "site_variation": null
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Deletes the article with all its variations or, with `site_variation`, only its text in that variation (an article without a text there gives 404). A page of a type (main page, 404, …; `article_type_id` is set) gives 409: move the type to another article or remove it with `content/article/update` (`article_type_id: 0`) first.
+}

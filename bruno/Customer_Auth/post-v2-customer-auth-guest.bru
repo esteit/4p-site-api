@@ -1,0 +1,30 @@
+meta {
+  name: Get a guest token
+  type: http
+  seq: 7
+  tags: [
+    Customer_Auth
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-auth/guest
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  A token for a customer without an account (an app before sign-in): in `X-Customer-Auth-Token` it opens only `customer-cart/show` and `customer-cart/item/*`, other customer operations give 403 `customer-token-required`. The cart lives as long as the token, 90 days; renew it before with `guest_token`, the new token keeps the cart. To place an order the guest signs in or up with a code — `customer-auth/sign-in` by `phone` (SMS) or `customer-auth/sign-up` by `email` (the password is optional), then `customer-auth/confirm` with `guest_token`: the guest cart moves to the customer. A code is required because an order on an unconfirmed phone or email would show the order to the owner of that phone or email.
+}

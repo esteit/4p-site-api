@@ -1,0 +1,32 @@
+meta {
+  name: Deactivate a rubric
+  type: http
+  seq: 6
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/deactivate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Hides the rubric on the site (`active: false`) together with its subtree on the storefront; `active` of the descendants does not change.
+}

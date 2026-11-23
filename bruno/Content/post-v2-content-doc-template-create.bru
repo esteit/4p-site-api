@@ -1,0 +1,48 @@
+meta {
+  name: Create a template
+  type: http
+  seq: 11
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/doc-template/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "kind": "layout",
+    "name": "Bruno example layout",
+    "html": "set by the pre-request script",
+    "styles": ".bruno-example { padding: 16px; }",
+    "context": {},
+    "active": false
+  }
+}
+
+script:pre-request {
+  // `{{ content }}` в теле Bruno принял бы за свою переменную — собираем строку здесь
+  const body = req.getBody();
+  body.html = '<div class="bruno-example">' + '{' + '{ content }' + '}' + '</div>';
+  req.setBody(body);
+}
+
+script:post-response {
+  if (res.body && res.body.data) {
+    bru.setVar("templateId", res.body.data.id);
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Creates a page template (`kind` — a page type) or a layout of the site (`kind` `layout`: `html` must contain `{{ content }}`, the page is inserted there; without it — 422 on `html`). Assign it with `rubric/update` or `brand/update`.
+}

@@ -1,0 +1,42 @@
+meta {
+  name: Update an address
+  type: http
+  seq: 5
+  tags: [
+    Customer_Account
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-account/address/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "address_id": {{addressId}},
+    "address": {
+      "first_name": "Ivan",
+      "last_name": "Testov",
+      "phone": "79000000000",
+      "email": "customer@example.com",
+      "country": "RU",
+      "city_id": "77000000000",
+      "street": "Tverskaya",
+      "house": "2"
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Replaces all fields of the address. An address of another customer gives 404.
+}

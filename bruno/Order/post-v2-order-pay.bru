@@ -1,0 +1,33 @@
+meta {
+  name: Pay an order from the deposit
+  type: http
+  seq: 5
+  tags: [
+    Order
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/order/pay
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "order_id": {{orderId}},
+    "deposit_currency": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Charges the partner price of the order with delivery (`deposit_due` of `order/show`) from the deposit of the site owner; the charge is in `deposit_paid`. Not enough deposit gives 409 `/api/problems/deposit-insufficient` and nothing is charged; a canceled order gives 409 `/api/problems/order-canceled`, an already paid one 409 `/api/problems/order-already-paid`. Parallel `order/pay` requests of the same order charge it once: the others get `order-already-paid`, or 409 `/api/problems/conflict` when the first one is still running (nothing charged by them, check `deposit_paid` with `order/show`).
+}

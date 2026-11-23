@@ -1,0 +1,32 @@
+meta {
+  name: Remove items from the cart
+  type: http
+  seq: 9
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/item/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "item_ids": [{{cartItemId}}]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Removes the items; if any of them is not in the cart nothing is removed and 404 is returned.
+}

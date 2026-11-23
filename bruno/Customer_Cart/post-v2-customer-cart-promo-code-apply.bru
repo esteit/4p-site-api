@@ -1,0 +1,32 @@
+meta {
+  name: Apply a promo code
+  type: http
+  seq: 10
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/promo-code/apply
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "code": "SALE10"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Applies a promo code of the site to the checkout, as the promo code field of the storefront cart: `promo_code` and `promo_discount` of the returned checkout show it, `total` is already discounted and `customer-order/create` charges the same. A code that is unknown, inactive, expired or whose conditions the cart does not meet (minimum amount, first order, brands, rubrics, single use and so on) gives 422 on `code` naming the failed conditions; the checkout stays without it. A new code replaces the applied one.
+}

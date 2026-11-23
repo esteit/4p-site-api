@@ -1,0 +1,30 @@
+meta {
+  name: Show the profile
+  type: http
+  seq: 1
+  tags: [
+    Customer_Account
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-account/profile/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Profile of the customer of the token with the city and the default address used by the checkout.
+}

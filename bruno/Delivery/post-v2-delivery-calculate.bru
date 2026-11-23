@@ -1,0 +1,39 @@
+meta {
+  name: Calculate delivery
+  type: http
+  seq: 1
+  tags: [
+    Delivery
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/delivery/calculate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "items": [
+      {
+        "product_variation_id": {{productVariationId}},
+        "quantity": 1
+      }
+    ],
+    "country": "RU",
+    "city_id": "{{cityId}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Delivery options for the items to the country (and city) of the recipient, priced as `order/create` will charge them; nothing is saved. Takes the same `items`, `country`, `currency`, `city_id` (`recipient.city_id` of the order) and `pick_up_point_id` as `order/create`: check the cart here, then order with the chosen `delivery_method_id`. Every delivery method of the site is in `options` (priced, cheapest first) or in `omitted` with the reason: `city_required` — a pick-up method without `city_id` or `pick_up_point_id`; `no_pick_up_points`; `too_heavy`; `country_not_served`; `warehouse_not_served` — a method must ship from the warehouses of all items at once, so a mixed-warehouse cart gets fewer methods (split it); `city_not_served` — Crimea and Sevastopol; `not_priced` — the tariff does not take an item (tyres). A pick-up method with `city_id` is priced at the most expensive point of the city (`price_is_upper_bound: true`); with `pick_up_point_id` — to that point. `delivery_date` is text for display, `delivery_date_iso` — the same date as `YYYY-MM-DD`; `weight_grams` — the weight the tariff priced. A price of `"0.00"` is valid. Rejected with 422 and `pointer`: a country the site does not deliver to (`country-not-delivered`), a currency the site has not for the country, a variation not sold on the site (`variation-unavailable`), a quantity above the stock (as in `order/create`: products are not bought to order), an item no tariff of the site can carry (`delivery-unavailable`), an inactive pick-up point.
+}

@@ -1,0 +1,39 @@
+meta {
+  name: Renew the customer token
+  type: http
+  seq: 4
+  tags: [
+    Customer_Auth
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-auth/refresh
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "refresh_token": "{{customerRefreshToken}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.token) {
+    bru.setVar("customerToken", res.body.data.token);
+    bru.setVar("customerRefreshToken", res.body.data.refresh_token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Exchanges the refresh token for a new customer token and a new refresh token of the same sign-in. A refresh token works once: a second exchange of the same token (a replay or two parallel requests) gives 401 and ends the whole sign-in, both pairs stop working — sign the customer in again. It stops working after `customer-auth/sign-out`, a password change or reset, when the customer or the site token that issued it is disabled: 401, sign the customer in again.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Activate a rubric
+  type: http
+  seq: 1
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/activate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Shows the rubric on the site (`active: true`). The flag is own: the rubric stays hidden while an ancestor is inactive.
+}

@@ -1,0 +1,98 @@
+meta {
+  name: SiteApiV2
+}
+
+auth {
+  mode: apikey
+}
+
+auth:apikey {
+  key: X-Auth-Token
+  value: {{siteToken}}
+  placement: header
+}
+
+tests {
+  const status = res.getStatus();
+  const body = res.getBody();
+  const header = (name) => String(res.getHeader(name) || "");
+  const path = String(req.getUrl()).replace(/^https?:\/\/[^/]+/, "").split("?")[0];
+
+  test("[contract] every response has X-Request-Id", function () {
+    expect(header("x-request-id")).to.match(/^[A-Za-z0-9-]{16,64}$/);
+  });
+
+  if (status < 400) {
+    test("[contract] success is a JSON envelope", function () {
+      expect(header("content-type")).to.contain("application/json");
+      expect(Object.keys(body)).to.deep.equal(["timestamp", "error", "data", "meta"]);
+      expect(body.error).to.equal(false);
+      expect(body.meta).to.be.an("object").and.not.be.an("array");
+    });
+    test("[contract] meta.request_id matches X-Request-Id", function () {
+      expect(body.meta.request_id).to.equal(header("x-request-id"));
+    });
+  } else {
+    test("[contract] error is application/problem+json", function () {
+      expect(header("content-type")).to.contain("application/problem+json");
+      expect(body.error).to.equal(true);
+      expect(body.status).to.equal(status);
+      expect(body.title).to.be.a("string").and.not.be.empty;
+      expect(body.instance).to.equal(path);
+      expect(body.request_id).to.equal(header("x-request-id"));
+    });
+  }
+}
+
+docs {
+  4Partners Site API v2: the catalog (`Stock` — read products, prices and stock; `Product` — manage products), content, settings and orders of a partner site, and the path of its customers from sign-in to an order.
+
+  OpenAPI spec: `{{baseUrl}}/v2.jsonopenapi`, API reference (Scalar): `{{baseUrl}}/v2`.
+
+  ## Requests
+
+  Every operation is `POST {{baseUrl}}/v2/<group>/<entity>/<action>` with a JSON body (`Content-Type: application/json`); an operation without parameters takes `{}`. Body keys are `snake_case`. An unknown key gives 422. Ids go in the body, never in the path.
+
+  ## Collection variables
+
+  - `baseUrl`: API host.
+  - `siteToken` (secret): the API key of the site, issued in the partner account.
+  - `customerToken`: filled by `Customer_Auth` sign-in, confirm and refresh and by `Customer_Account` password update, do not set by hand.
+  - `productId`, `productVariationId`, `rubricId`, `deliveryMethodId`: a product, a product variation, a rubric and a delivery method of your site for the `Stock`, `Product` and order examples.
+  - `orderId`: filled by `Order / Place an order`, used by pay, show and cancel.
+  - `customerOrderId`: filled by `Customer_Order / Place the order`, used by show and cancel of `Customer_Order`.
+
+  ## Authorization
+
+  - Site token in `X-Auth-Token`: every group except the customer ones.
+  - Customer token in `X-Customer-Auth-Token`: `Customer_Account`, `Customer_Cart`, `Customer_Order`. The folders send it themselves.
+  - `Dictionary` accepts either token.
+
+  No token or a token that is not accepted gives 401.
+
+  ## Successful response
+
+  A JSON envelope: `timestamp`, `error` (always `false`), `data` (the result: an object, or an array for lists), `meta` (`request_id`, `usage` with the request limit state). A field without a value comes as `null`, it is never omitted. Money is a decimal string with two digits (`"65095.00"`), country codes are ISO 3166-1 alpha-2 in upper case (`RU`; input is accepted in any case). Lists with a cursor return `next_cursor`; pass it as `cursor` for the next page.
+
+  ## Errors
+
+  `application/problem+json`: `error` (always `true`), `type` (stable kind, branch on it, not on the text), `title`, `status`, `detail`, `instance`, `request_id`; `errors` with `pointer` (for example `#/items/0/quantity`) and `detail` (the field, what is wrong and what to pass) for 422 `validation-error`; a body that is not a JSON object gives 400 `bad-request`; `pointer` for a business refusal tied to one value of the body.
+
+  `detail` says what is wrong (the id, value or limit) and what to do, with the operation to take the right value from: `Not enough deposit to pay order 123: 803.08 USD required, 0.00 USD available. Top up the deposit by at least 803.08 USD and repeat order/pay.` It follows `Accept-Language` (`en`, `ru`); do not parse it.
+
+  `type` is a link relative to the API host: `GET https://api.4partners.io/api/problems/<slug>` (no token) opens the page of the type — what it means, when it happens, how to fix it and an example response; with `Accept: application/json` the same as JSON (`type`, `title`, `status`, `description`, `when`, `how_to_fix`, `example`). All types: `GET /api/problems`. In the OpenAPI spec the schema `Problem` lists every `type` with its description, and each 403/404/409/422 response of an operation lists the `type` values it can return (`x-problem-types`).
+
+  Examples: `subscription-expired` (403), `deposit-insufficient`, `order-already-paid`, `order-canceled`, `external-id-conflict` (409), `business-rule`, `price-below-site-price`, `pick-up-point-required`, `delivery-unavailable` (422: the delivery method does not carry the order — choose another one from `delivery/calculate`; at `order/pay` nothing is charged, cancel the order and place it again), `rubric-not-in-tree`, `rubric-inactive`, `no-products-accepted`, `site-variation-unknown` (422).
+
+  ## Language
+
+  `Accept-Language: en` or `ru`, English by default. It sets the language of `title`, `detail` and validation texts; the response has `Content-Language`.
+
+  ## Region
+
+  `site_variation` selects the variation of the site (country, currency, language; codes — `settings/site-variation/list`); empty or `default` is the default one. It is not a variation of a product (`variations`, `product_variation_ids`). `country` overrides the country of the site variation.
+
+  ## Request id
+
+  Every response has `X-Request-Id`. Send your own to trace a request, and give it when you report a problem.
+}

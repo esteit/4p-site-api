@@ -1,0 +1,35 @@
+meta {
+  name: Search settlements
+  type: http
+  seq: 1
+  tags: [
+    Dictionary
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/dictionary/city/search
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": "Москва",
+    "country": "RU",
+    "page": 1,
+    "per_page": 20
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Settlements of a delivery country of the site by a part of the name, paginated: the page is in `meta.pager`. In Russia the source is the KLADR directory (without Crimea and Sevastopol, where the site does not deliver): names that start with `query` come first, then the other matches, larger settlements higher; `е` and `ё` are the same. `id` is the KLADR id: pass it as `city_id` to `delivery/calculate`, `delivery/pick-up-point/list` and `recipient.city_id` of `order/create`. In other countries it is a hint of the geocoder: it finds a city by its full name, `id` is `null`, pass the name as text (`recipient.city`). A country the site does not deliver to gives 422 `country-not-delivered` with `pointer` `#/country`.
+}

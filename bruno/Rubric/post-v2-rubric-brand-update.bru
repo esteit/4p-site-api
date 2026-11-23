@@ -1,0 +1,45 @@
+meta {
+  name: Update texts of a brand in a rubric
+  type: http
+  seq: 4
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/brand/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0,
+    "brand_id": 0,
+    "translations": [
+      {
+        "locale": "",
+        "h1": null,
+        "description": null,
+        "meta_title": null,
+        "meta_description": null,
+        "meta_keywords": null,
+        "meta_robots": null,
+        "meta_lead": null
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Changes texts of the page of the brand in a rubric by locale: an omitted or null field stays as it is, an empty string clears the text. A locale of another site gives 422 with `pointer` to it, a `rubric_id` not in the site tree — 422 `rubric-not-in-tree`, a brand closed for the site — 404.
+}

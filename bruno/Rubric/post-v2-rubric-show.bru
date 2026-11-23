@@ -1,0 +1,33 @@
+meta {
+  name: Show a rubric
+  type: http
+  seq: 11
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0,
+    "site_variation": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  A rubric of the site tree: the fields of `rubric/list` with translations, description and meta of each site variation (`seo`, one entry per variation, a field without a text is null), templates and auto landing pages. `breadcrumbs` are the base names of the ancestors, `translations[].breadcrumbs` — their full names in the language. A rubric of another tree gives 404.
+}

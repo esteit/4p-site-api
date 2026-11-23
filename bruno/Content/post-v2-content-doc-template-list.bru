@@ -1,0 +1,32 @@
+meta {
+  name: List templates
+  type: http
+  seq: 10
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/doc-template/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "kind": null,
+    "page": 1,
+    "per_page": 50
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Templates of the site and shared templates (`global`), page by page: own first, then by id descending. Without the content: it is in `content/doc-template/show`.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Show a brand on the site
+  type: http
+  seq: 1
+  tags: [
+    Brand
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/brand/activate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "brand_id": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Removes the brand from the brands hidden by the partner: it and its products are shown on the site again, the brand comes back to `brand/list`. The cache of the site is reset.
+}

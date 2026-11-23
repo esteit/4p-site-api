@@ -1,0 +1,20 @@
+meta {
+  name: Content
+}
+
+auth {
+  mode: inherit
+}
+
+docs {
+  Articles, their tags and page types, page templates and layouts of the site. Run top to bottom: the requests use what the previous ones created and clean up after themselves.
+
+  1. `List article types` and `List article tags`: dictionaries for `article_type_id` and `tags`.
+  2. `List articles`: all articles of the site with the meta of `site_variation`, filters `slug`, `rubric_id`, `tag`, `query`, `has_text`.
+  3. `Create an article` → `Show` → `Update` → `Deactivate` → `Activate` → `Delete`: the article is created as a draft (`active: false`), its id is saved to `articleId`. Dates are ISO 8601 with an offset, an empty string resets a text field, lists drop repeats, rubrics and relinking must be of the site tree.
+  4. `List templates` → `Create a template` → `Show` → `Update` → `Delete`: a layout with `{{ content }}`, its id is saved to `templateId`. Shared templates are read-only (409).
+
+  HTML, styles and scripts of articles and templates are output on the storefront as is, without sanitizing.
+
+  Collection variables used here: `rubricId` (a rubric of your site tree); `articleId` and `templateId` are set by the create requests.
+}

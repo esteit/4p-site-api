@@ -1,0 +1,35 @@
+meta {
+  name: List aspect values by ids
+  type: http
+  seq: 3
+  tags: [
+    Aspect
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/aspect/param/batch-show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "param_ids": [
+      0
+    ],
+    "site_variation": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Up to 1000 values (params) in the order of `param_ids`, in the language of the site variation (`site_variation`). A repeated id comes once, at its first place; unknown ids, inactive values and values of an inactive or deleted aspect are left out without an error, as in products, so the answer may be shorter than the request: match the items by `id`. A read with the ids in the body.
+}

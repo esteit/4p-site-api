@@ -1,0 +1,31 @@
+meta {
+  name: Show an article
+  type: http
+  seq: 5
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/article/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "article_id": {{articleId}},
+    "site_variation": "default"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  An article of the site in a site variation with the document. An article of another site, or an article without its text in the variation (`has_text: false` in `content/article/list`), gives 404.
+}

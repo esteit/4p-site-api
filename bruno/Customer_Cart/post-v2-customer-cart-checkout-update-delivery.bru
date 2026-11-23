@@ -1,0 +1,34 @@
+meta {
+  name: Choose the delivery and the pick-up point
+  type: http
+  seq: 8
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/checkout/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "package_id": "{{packageId}}",
+    "delivery_method_id": {{pickUpDeliveryMethodId}},
+    "pick_up_point_id": {{pickUpPointId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  The method and the point of one package; the point is never chosen silently. For a courier method leave `pick_up_point_id` out. A method the package does not have — 422 on `delivery_method_id`, a point not from `List pick-up points` — 422 on `pick_up_point_id`. After it the package is `available: true` and `Customer_Order / Place the order` can go.
+}

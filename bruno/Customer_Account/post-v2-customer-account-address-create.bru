@@ -1,0 +1,48 @@
+meta {
+  name: Add an address
+  type: http
+  seq: 3
+  tags: [
+    Customer_Account
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-account/address/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "address": {
+      "first_name": "Ivan",
+      "last_name": "Testov",
+      "phone": "79000000000",
+      "email": "customer@example.com",
+      "country": "RU",
+      "city_id": "77000000000",
+      "street": "Tverskaya",
+      "house": "1",
+      "flat": "5"
+    }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+script:post-response {
+  if (res.getStatus() === 201 && res.body.data) {
+    bru.setVar("addressId", res.body.data.id);
+  }
+}
+
+docs {
+  Russian address: a settlement by `city_id` (KLADR) or `city_name`, street and house. Crimea and Sevastopol give 422.
+}

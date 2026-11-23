@@ -1,0 +1,38 @@
+meta {
+  name: Unlink products from rubrics
+  type: http
+  seq: 6
+  tags: [
+    Product
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/product/rubric/unlink
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_ids": [
+      {{productId}}
+    ],
+    "rubric_ids": [
+      {{rubricId}}
+    ],
+    "with_ancestors": false
+  }
+}
+
+assert {
+  res.status: eq 202
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Accepts unlinking of up to 1000 products of the site from rubrics of the site tree together with their subrubrics. `with_ancestors` also removes the ancestors of each rubric (undoes `product/rubric/link`), but only those where the product has no other link left in the subtree: a product of a neighbouring section stays in the common parents. Without `rubric_ids` the products are unlinked from all rubrics of the site and leave the site. 202: done in the background within minutes, the main rubric and restrictions are recalculated from the new links. `rubric_ids` of the answer are the requested rubrics: which subrubrics and ancestors are removed is decided per product when the job runs, by its links at that moment. Products not in the site tree are returned in `rejected_product_ids`; a rubric not in the site tree rejects the whole request (422 `rubric-not-in-tree`), as does a request without a single product of the site (422 `no-products-accepted`).
+}

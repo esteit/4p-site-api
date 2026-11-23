@@ -1,0 +1,39 @@
+meta {
+  name: Update an article
+  type: http
+  seq: 6
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/article/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "article_id": {{articleId}},
+    "meta_description": "",
+    "tags": [
+      "bruno-example",
+      "bruno-example-2"
+    ],
+    "tags_relink": [
+      "R{{rubricId}}"
+    ],
+    "site_variation": "default"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Changes the given fields of an article of the site; an omitted or `null` field stays as it is, an empty string resets a text field (meta, preview text). Meta, tags and the document are of the site variation `site_variation`: an article without its text there gets one. Lists (`rubric_ids`, `tags`, `tags_relink`) are replaced as a whole, repeats are dropped; `tags_relink` replaces only the manual links, the automatic ones of a Markdown article (`tags_relink_auto`) stay. A Markdown article takes `markdown` (the HTML is rebuilt), not `html`/`styles`/`scripts`/`settings`/`context` (422 on the field); an article of the block editor of the admin panel takes no document fields. `article_type_id` moves a page type (main page, 404, …) to this article, `0` removes it. The change is written in one transaction: a refusal leaves the article as it was.
+}

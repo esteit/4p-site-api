@@ -1,0 +1,34 @@
+meta {
+  name: Show site texts of a product
+  type: http
+  seq: 3
+  tags: [
+    Product
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/product/text/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_id": {{productId}},
+    "with_source": true
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.data.locales: isArray
+  res.body.meta: isDefined
+}
+
+docs {
+  Texts and SEO the site set over the common translation for a product of the site tree and its variations, in every language of the site variations (and in any other language the site has texts of the product in), in the format of the answers of `product/update` and `product/variation/update` — to compare them with a CMS before writing. A `null` field is not set by the site. With `site_variation` — only its language. `with_source` adds the texts the storefront shows where a site text is not set: `common` of each language (the common translation) and `source` (the catalog texts). A product not in the site tree gives 404.
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Show the cart
+  type: http
+  seq: 2
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Items with current prices: items without an offer are removed, prices are updated. Name and `url` of an item are those of `stock/product/show` for the same `site_variation`; `available_quantity` — the stock that can be ordered now. When an address is chosen in the checkout, prices are for its country. An empty cart is not an error.
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Show my order
+  type: http
+  seq: 2
+  tags: [
+    Customer_Order
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-order/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "order_id": {{customerOrderId}},
+    "site_variation": "default"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.error: eq false
+  res.body.data.id: isNumber
+  res.body.data.packages: isArray
+  res.body.data.status_history: isArray
+}
+
+docs {
+  The card of an order of the customer, as the order page of the account on the site: totals, `is_paid` and `payment_url` (the payment page of the site while the order is unpaid and not canceled; open it again to repeat a failed payment), payment method, packages with delivery method, pick-up point address, delivery address and recipient, items with images, and `status_history` — when the order entered each status. There is no notification about the payment or a status change: poll this operation. An order of another customer gives 404.
+}

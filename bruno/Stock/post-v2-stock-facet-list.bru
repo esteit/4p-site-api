@@ -1,0 +1,33 @@
+meta {
+  name: List search facets
+  type: http
+  seq: 5
+  tags: [
+    Stock
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/stock/facet/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": {{rubricId}},
+    "in_stock": true
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Facets of the selection of `stock/product/search` with the same filters: aspect values with the number of products, brands with the number of products and the price range, by the search index. As in the storefront filters, the counts of an aspect do not take its own selected values into account, brands — `brand_ids`, the price range — `price_from` and `price_to`: a client shows how many products each other value would give. With `rubric_id` the aspects are the filters of the rubric in their order (`rubric/aspect/list`). A separate operation, not a part of `stock/product/search`: facets do not change from page to page, and each selected aspect costs one more query to the index.
+}

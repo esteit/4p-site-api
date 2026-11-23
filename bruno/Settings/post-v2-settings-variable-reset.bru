@@ -1,0 +1,35 @@
+meta {
+  name: Reset settings
+  type: http
+  seq: 10
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/variable/reset
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "site_variation": "default",
+    "codes": [
+      "is_show_out_of_stock_products"
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Resets settings to their defaults in a site variation and returns the values in effect. A read-only setting gives 422 with `pointer` to its code.
+}

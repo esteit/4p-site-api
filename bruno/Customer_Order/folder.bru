@@ -1,0 +1,24 @@
+meta {
+  name: Customer_Order
+}
+
+auth {
+  mode: apikey
+}
+
+auth:apikey {
+  key: X-Customer-Auth-Token
+  value: {{customerToken}}
+  placement: header
+}
+
+docs {
+  Orders of a signed-in customer: the customer token goes to `X-Customer-Auth-Token`. Get it with `Customer_Auth` sign-in or confirm.
+  
+  Scenario, in `seq` order:
+  
+  1. `Place the order` — from the selected cart items and the checkout choice (`Customer_Cart`: add an item, choose the address, delivery and payment). Saves `customerOrderId`.
+  2. `Show my order` — the card: `payment_url` (open it to pay on the site; open it again to repeat a failed payment), `is_paid` (no notification: poll this request), delivery, address and recipient, items with images, `status_history`.
+  3. `List my orders` — the same cards, newest first, `status` filters by one status.
+  4. `Cancel my order` — an unpaid order only; a paid one gives 409 `order-already-paid`. Run it to clean up the order of the scenario.
+}

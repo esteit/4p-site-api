@@ -1,0 +1,32 @@
+meta {
+  name: List aspect groups
+  type: http
+  seq: 2
+  tags: [
+    Aspect
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/aspect/group/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "site_variation": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  All aspect groups in the language of the site variation (`site_variation`), by `position`; groups with the same `position` — by `id`. Aspects inside a group have no order of their own: show them in the order of the answer that gave them (`aspect/batch-show` — the order of `aspect_ids`, a product — the order of its `aspects`, `rubric/aspect/list` and `stock/facet/list` — the order of the rubric filters).
+}

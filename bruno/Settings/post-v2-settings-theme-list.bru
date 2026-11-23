@@ -1,0 +1,26 @@
+meta {
+  name: List themes
+  type: http
+  seq: 11
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/theme/list
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Themes of the site and shared themes, without `vars` and `styles`.
+}

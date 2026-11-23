@@ -1,0 +1,30 @@
+meta {
+  name: List delivery options
+  type: http
+  seq: 4
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/delivery-option/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  With `package_id` — methods of that checkout package with prices for the chosen address: the same as `delivery_options` of the package in `customer-cart/checkout/show`, choose one there. Without `package_id` — a preview before the checkout: methods for all items of the cart as one shipment to the city of the profile or of the default address (Russia without a city gives 422); the checkout may split the cart into packages by warehouse with their own methods. `delivery_date` is text for display, `delivery_date_iso` — the same date as `YYYY-MM-DD`.
+}

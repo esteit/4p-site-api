@@ -1,0 +1,41 @@
+meta {
+  name: List rubrics of the site
+  type: http
+  seq: 8
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "parent_id": null,
+    "with_descendants": false,
+    "max_level": null,
+    "active": null,
+    "partner_tag": null,
+    "non_empty": false,
+    "ids": null,
+    "site_variation": null,
+    "page": 0,
+    "per_page": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Rubrics of the site tree ordered by level, position and id, page by page (`meta.pager`): the whole tree, the children of `parent_id` or all its descendants (`with_descendants`), or only `ids`. Each row carries what a menu and breadcrumbs need, so the whole menu is built from this list without `rubric/show` per rubric: the menu flags (`in_top_menu`, `in_all_menu`, `in_footer_menu`, `unfold`, `unfold_count`), `local_name` in the language of `site_variation` and `ancestors` from the root. `active` is the own flag of the rubric: a child of an inactive rubric can be `true`, the storefront hides it with the parent. `product_count` — products of the site in the rubric with its subrubrics by the search index, as `stock/product/search` finds them; `non_empty=true` leaves out rubrics without products. Translations, description and meta are in `rubric/show`. A `parent_id` not in the site tree gives 422 `rubric-not-in-tree`, `with_descendants` without `parent_id` — 422.
+}

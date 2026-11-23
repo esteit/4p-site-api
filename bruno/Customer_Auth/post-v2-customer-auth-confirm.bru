@@ -1,0 +1,40 @@
+meta {
+  name: Confirm the sign-in or sign-up with the code
+  type: http
+  seq: 3
+  tags: [
+    Customer_Auth
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-auth/confirm
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "confirmation_id": "{{confirmationId}}",
+    "code": "0000"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.token) {
+    bru.setVar("customerToken", res.body.data.token);
+    bru.setVar("customerRefreshToken", res.body.data.refresh_token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Exchanges `confirmation_id` and the code from the SMS or the email for the customer tokens. A new phone or email is registered. An email that is linked to an existing customer but not confirmed there (for example set by `customer-account/profile/update`) does not sign in to that customer: 422, sign in with its password or phone. A wrong code gives 401, too many wrong codes give 422, then 429 `sign-in-locked`.
+}

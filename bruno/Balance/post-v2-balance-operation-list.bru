@@ -1,0 +1,37 @@
+meta {
+  name: List deposit operations
+  type: http
+  seq: 2
+  tags: [
+    Balance
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/balance/operation/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "currency": "RUB",
+    "type": null,
+    "date_from": null,
+    "date_to": null,
+    "page": 1,
+    "per_page": 50
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta.pager: isDefined
+}
+
+docs {
+  Operations of the deposit of the site owner, newest first, page by page (`meta.pager`): charges for orders paid with `order/pay`, refunds for orders, vouchers, top-ups and corrections by an operator. The amount is signed: a charge is negative. Canceling an order does not return the deposit: a refund is made by an operator and comes as `order_refund`. Filters: `currency`, `type`, `date_from` and `date_to` (days, inclusive).
+}

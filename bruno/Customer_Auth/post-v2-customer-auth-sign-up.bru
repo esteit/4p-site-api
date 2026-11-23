@@ -1,0 +1,39 @@
+meta {
+  name: Register a customer by email
+  type: http
+  seq: 1
+  tags: [
+    Customer_Auth
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-auth/sign-up
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "customer@example.com",
+    "password": "secret-password"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.confirmation_id) {
+    bru.setVar("confirmationId", res.body.data.confirmation_id);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Sends a code to the email and returns a one-time `confirmation_id` (`email:` and 32 hex characters): the customer is created with the password of this sign-up (or without a password, then they sign in by a code) by `customer-auth/confirm` with the code from the email. Every sign-up gets its own `confirmation_id`, and only it sets its password: another sign-up with the same email sends a new code but does not change the password of this one. The answer is the same whether the email is registered or not; for a registered email the code signs the customer in and the password stays as it was. A new code for the same email — not earlier than in a minute (422).
+}

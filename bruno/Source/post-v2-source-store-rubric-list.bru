@@ -1,0 +1,39 @@
+meta {
+  name: List rubrics of a source store
+  type: http
+  seq: 1
+  tags: [
+    Source
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/source/store-rubric/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "store_id": 38,
+    "parent_id": null,
+    "with_descendants": false,
+    "max_level": 2,
+    "active": null,
+    "site_variation": null,
+    "page": 1,
+    "per_page": 500
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Rubrics of the tree of a source store from `source/store/list` ordered by level, position and id, page by page (`meta.pager`): the whole tree, the children of `parent_id` or all its descendants. Each rubric comes with its ancestors and translations, `local_name` is in the language of `site_variation` of the site of the token; menu flags and partner tags are settings of the rubrics of the site and are not here. `url` is the page on the source store, not on the site of the partner. Products of a source rubric with its subrubrics — `stock/product/id/list` with `store_id` and `rubric_id`; link them to the site tree with `product/rubric/link`. A site that is not a source store gives 404, a `parent_id` of another tree — 422 `rubric-not-in-tree`.
+}

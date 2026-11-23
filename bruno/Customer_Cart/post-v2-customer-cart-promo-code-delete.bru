@@ -1,0 +1,30 @@
+meta {
+  name: Remove the promo code
+  type: http
+  seq: 11
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/promo-code/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Removes the applied promo code from the checkout; without a code nothing changes. Returns the recalculated checkout.
+}

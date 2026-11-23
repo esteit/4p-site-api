@@ -1,0 +1,19 @@
+meta {
+  name: Product
+}
+
+auth {
+  mode: inherit
+}
+
+docs {
+  Manage products of the site: texts and SEO, texts of variations, placement in rubrics. Reading is in the `Stock` folder.
+
+  1. `Link products to rubrics` (`product/rubric/link`): adds products of the common catalog to rubrics of the site tree and their parent rubrics — this is how a product, including one from a source store, gets on the site. An inactive rubric is accepted. 202: done in the background within minutes; check with `Stock / List product ids of the site` and `rubric_id`.
+  2. `Set the main rubric of products` (`product/primary-rubric/update`): the rubric for breadcrumbs and the product category; it must be active, only products already linked to it change, unknown ids come back in `rejected_product_ids`.
+  3. `Show site texts of a product` (`product/text/show`): the site texts of the product and its variations in every language of the site, with `with_source` — the common translation and the catalog texts to compare with.
+  4. `Update texts of a product` (`product/update`) and `Update texts of a product variation` (`product/variation/update`): name, description and SEO of the site in the language of `site_variation`. An omitted or `null` field stays as it is, an empty string resets it to the common text; values are trimmed.
+  5. `Unlink products from rubrics` (`product/rubric/unlink`): from rubrics with their subrubrics (`with_ancestors` — from the parent rubrics too, unless the product has another link under them); without `rubric_ids` the products leave the site. 202, in the background.
+
+  Collection variables used here: `productId`, `productVariationId`, `rubricId` (set them for your site).
+}

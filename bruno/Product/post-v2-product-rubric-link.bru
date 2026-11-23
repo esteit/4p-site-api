@@ -1,0 +1,37 @@
+meta {
+  name: Link products to rubrics
+  type: http
+  seq: 1
+  tags: [
+    Product
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/product/rubric/link
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_ids": [
+      {{productId}}
+    ],
+    "rubric_ids": [
+      {{rubricId}}
+    ]
+  }
+}
+
+assert {
+  res.status: eq 202
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Accepts linking of up to 1000 products to rubrics of the site tree and to all their ancestors, so a product of a subrubric is shown in the parent rubrics too. Any product of the common catalog can be linked, not only one already on the site: this is how the partner builds the assortment of the site — a product linked to the site tree becomes a product of the site (find products to add in a source store: rubrics — `source/store-rubric/list`, their products — `stock/product/id/list` with `store_id` and `rubric_id`). An inactive rubric is accepted: a section can be filled before it is switched on (`rubric/activate`); `product/primary-rubric/update` needs an active one. 202: the links, the main rubric, restrictions and the search index are updated in the background within minutes; check with `stock/product/id/list` with `rubric_id`. `rubric_ids` of the answer — the rubrics the products are linked to: each requested rubric followed by its ancestors from the root. Unknown product ids are returned in `rejected_product_ids` and skipped; a rubric not in the site tree rejects the whole request (422 `rubric-not-in-tree`), as does a request without a single known product (422 `no-products-accepted`).
+}

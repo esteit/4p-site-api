@@ -1,0 +1,41 @@
+meta {
+  name: List pick-up points
+  type: http
+  seq: 7
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/pick-up-point/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "package_id": "{{packageId}}",
+    "delivery_method_id": {{pickUpDeliveryMethodId}},
+    "page": 1,
+    "per_page": 20
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.length) {
+    bru.setVar("pickUpPointId", res.body.data[0].id);
+  }
+}
+
+docs {
+  Pick-up points of a pick-up delivery method (`type: pick_up_point`) of the checkout package with the delivery price, paginated: the page is in `meta.pager`. Only points of one settlement: `city_id`, by default the settlement of the chosen address (an address without a KLADR id — points whose address has its city); `min_latitude`, `min_longitude`, `max_latitude`, `max_longitude` narrow it to the frame of a map. A courier method gives 422. Pass the chosen `id` (integer) as `pick_up_point_id` to `customer-cart/checkout/update`: no point is chosen silently, `selected: true` is the point the customer chose.
+}

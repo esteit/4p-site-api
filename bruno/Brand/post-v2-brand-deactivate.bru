@@ -1,0 +1,32 @@
+meta {
+  name: Hide a brand on the site
+  type: http
+  seq: 2
+  tags: [
+    Brand
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/brand/deactivate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "brand_id": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Hides the brand and its products on the site: the brand leaves `brand/list` and comes in `brand/list-denied`. The cache of the site is reset.
+}

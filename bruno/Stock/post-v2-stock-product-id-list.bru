@@ -1,0 +1,32 @@
+meta {
+  name: List product ids of the site
+  type: http
+  seq: 1
+  tags: [
+    Stock
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/stock/product/id/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "limit": 1000
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  All product ids of the site rubric tree, or of `rubric_id` with its subrubrics, in ascending order, page by page: pass `next_cursor` of the answer as `cursor` until it is null. Read from the database, not from the search index, so a product does not drop out of the list while it is being reindexed. Availability is not checked here: use `stock/product/batch-show`. With `store_id` — products of the tree of a source store (`source/store/list`, rubrics — `source/store-rubric/list`) instead of the site tree: candidates to add to the site with `product/rubric/link`; a site that is not a source store gives 404, a `rubric_id` of another tree — 422 `rubric-not-in-tree`.
+}

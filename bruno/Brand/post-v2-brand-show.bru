@@ -1,0 +1,32 @@
+meta {
+  name: Show a brand
+  type: http
+  seq: 6
+  tags: [
+    Brand
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/brand/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "brand_id": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  A brand visible to the site with synonyms, texts of the site by locale and templates. A brand closed for the site by the platform gives 404; a brand hidden by the partner is shown with `active: false`.
+}

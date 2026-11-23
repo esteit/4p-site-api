@@ -1,0 +1,36 @@
+meta {
+  name: Search products
+  type: http
+  seq: 4
+  tags: [
+    Stock
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/stock/product/search
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": "",
+    "in_stock": true,
+    "sort": "relevance",
+    "page": 1,
+    "per_page": 20
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Products of the site found in the search index by text, rubric, brands, aspect values (`param_ids`: OR inside one aspect, AND between aspects), price, stock and discount, page by page (`meta.pager`), in the format of `stock/product/show`: prices and stock are current, not from the index. Every page is exactly the window of the index: a product the index has in stock but the live data does not comes with `available: false` instead of dropping out, so pages are full and their sum is `meta.pager.total`. A product closed for the site after the last indexing comes with `closed: true`; only a product unlinked from the site tree after the last indexing is left out, until the next indexing. The storefront hides a product with `available: false` itself; a product without `variations` cannot be sold now. With `sort` by price, products without a current price (`min_price: null`) go last on each page. A product added since the last indexing is not found yet: `stock/product/id/list` reads the database. Facets of the same selection (values with counts, brands, price range) — `stock/facet/list`. Pages go down to 10 000 products: to get all products use `stock/product/id/list` and `stock/product/batch-show`.
+}

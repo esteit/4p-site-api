@@ -1,0 +1,17 @@
+meta {
+  name: Settings
+}
+
+auth {
+  mode: inherit
+}
+
+docs {
+  Settings of the site: variables (texts, switches, templates, keys), themes of the storefront, site variations and information about the site. Run the requests in order:
+
+  1. `Show site information` and `List site variations`: `code` of a variation is `site_variation` of other operations.
+  2. `List rubrics of settings`, `List icons of settings`: the tree and icons that settings refer to.
+  3. `List settings` (page by page, filters `rubric_id`, `codes`, `type`, `query`) and `Show a setting`; `Show the template context of settings` for `twig` settings (`twig_type`).
+  4. `Save settings` then `Reset settings`: changes `is_show_out_of_stock_products` of the site and resets it to the default. Secrets come masked: a mask sent back is skipped. `mailer_host` is read-only (credentials of the mail server).
+  5. Themes: `List themes` (`active` — the theme of the storefront, chosen by `default_theme`), `Create a theme` keeps `themeId`, then `Show`, `Update` and `Delete` it.
+}

@@ -1,0 +1,210 @@
+# 4Partners Site API 2.0.0
+
+> The API of a 4Partners partner site: catalog, content and settings of the site, orders of the partner paid from its deposit, and the path of a customer from sign-in to an order.
+
+- **Requests.** Every operation is `POST /v2/<group>/<entity>/<action>` with a JSON body; an operation without parameters takes `{}`. Keys are `snake_case`, ids go in the body, an unknown key gives 422.
+- **Authorization.** The site token in `X-Auth-Token` (issued in the partner account). Customer groups (`customer-account`, `customer-cart`, `customer-order`) take the customer token in `X-Customer-Auth-Token`, issued by `customer-auth` with the site token: it is valid for an hour, `customer-auth/refresh` renews it with the one-time refresh token (30 days), `customer-auth/sign-out` ends the sign-in. Customer tokens stop working after a password change or reset and when the site token that issued them is disabled. Dictionaries accept either token; other operations read only `X-Auth-Token`. A wrong kind of token gives 403 `customer-token-required` or `site-token-required`.
+- **Responses.** A JSON envelope `{timestamp, error, data, meta}`; a field without a value is `null`. Money is a decimal string (`"65095.00"`), country codes are ISO 3166-1 alpha-2 (`RU`).
+- **Errors.** `application/problem+json` with a stable `type` to branch on, `detail` and `pointer` to the wrong value.
+- **Language.** The language of data (product names, characteristics, rubrics, countries, articles) is set by `site_variation` in the body: the code of a site variation from `settings/site-variation/list`, the default variation when omitted. `Accept-Language: en` or `ru` (English by default) sets only the language of error texts (`detail`).
+- **Limits.** 600 requests per minute (sliding window) for each group, counted per site: all tokens of the site share one counter; in customer groups — per customer. The state is in `meta.usage` and `X-RateLimit-*` headers; over the limit — 429 with `Retry-After`.
+- **For AI agents.** `/v2/llms.txt` — groups and operations one line each; `/v2/llms-full.txt` — every operation with its body fields, response fields and error types, in Markdown.
+
+Base URL: `https://api.4partners.io/v2`. Every operation is `POST` with a JSON body (`Content-Type: application/json`); an operation without parameters takes `{}`.
+
+## Docs
+
+- [OpenAPI spec](https://api.4partners.io/v2.jsonopenapi): the machine-readable contract with schemas and examples
+- [API reference](https://api.4partners.io/v2): the same contract for people
+- [Error types](https://api.4partners.io/api/problems): what each `type` of an error means and how to fix it
+- [Full reference](https://api.4partners.io/v2/llms-full.txt): every operation with its body fields, response fields and error types
+
+## Stock
+
+Prices, stock, cards, search and facets of products sold on the site — for storefronts and sync.
+
+- `POST /v2/stock/facet/list` (`stock_facet_list`): List search facets
+- `POST /v2/stock/list` (`stock_list`): List prices and stock
+- `POST /v2/stock/product/batch-show` (`stock_product_batch_show`): List products by ids
+- `POST /v2/stock/product/id/list` (`stock_product_id_list`): List product ids of the site
+- `POST /v2/stock/product/search` (`stock_product_search`): Search products
+- `POST /v2/stock/product/show` (`stock_product_show`): Show a product
+- `POST /v2/stock/product/similar` (`stock_product_similar`): Show similar products
+- `POST /v2/stock/product/suggest` (`stock_product_suggest`): Suggest products while typing
+
+## Product
+
+Manage products of the site: texts and SEO, translations, placement in rubrics.
+
+- `POST /v2/product/primary-rubric/update` (`product_primary_rubric_update`): Set the main rubric of products
+- `POST /v2/product/rubric/link` (`product_rubric_link`): Link products to rubrics
+- `POST /v2/product/rubric/unlink` (`product_rubric_unlink`): Unlink products from rubrics
+- `POST /v2/product/text/show` (`product_text_show`): Show site texts of a product
+- `POST /v2/product/update` (`product_update`): Update texts of a product
+- `POST /v2/product/variation/update` (`product_variation_update`): Update texts of a product variation
+
+## Rubric
+
+The rubric tree of the site, texts of a brand in a rubric, filter aspects of a rubric.
+
+- `POST /v2/rubric/activate` (`rubric_activate`): Activate a rubric
+- `POST /v2/rubric/aspect/list` (`rubric_aspect_list`): List filter aspects of a rubric
+- `POST /v2/rubric/brand/show` (`rubric_brand_show`): Show a brand in a rubric
+- `POST /v2/rubric/brand/update` (`rubric_brand_update`): Update texts of a brand in a rubric
+- `POST /v2/rubric/create` (`rubric_create`): Create a rubric
+- `POST /v2/rubric/deactivate` (`rubric_deactivate`): Deactivate a rubric
+- `POST /v2/rubric/delete` (`rubric_delete`): Delete a rubric
+- `POST /v2/rubric/list` (`rubric_list`): List rubrics of the site
+- `POST /v2/rubric/move` (`rubric_move`): Move a rubric
+- `POST /v2/rubric/search` (`rubric_search`): Search rubrics of the site
+- `POST /v2/rubric/show` (`rubric_show`): Show a rubric
+- `POST /v2/rubric/update` (`rubric_update`): Update a rubric
+
+## Brand
+
+Brands of the site: list, search, texts, show and hide.
+
+- `POST /v2/brand/activate` (`brand_activate`): Show a brand on the site
+- `POST /v2/brand/deactivate` (`brand_deactivate`): Hide a brand on the site
+- `POST /v2/brand/list` (`brand_list`): List brands with products on the site
+- `POST /v2/brand/list-denied` (`brand_list_denied`): List brands hidden on the site
+- `POST /v2/brand/search` (`brand_search`): Search brands
+- `POST /v2/brand/show` (`brand_show`): Show a brand
+- `POST /v2/brand/update` (`brand_update`): Update texts of a brand
+
+## Aspect
+
+Aspects (characteristics), their values and groups.
+
+- `POST /v2/aspect/batch-show` (`aspect_batch_show`): List aspects by ids
+- `POST /v2/aspect/group/list` (`aspect_group_list`): List aspect groups
+- `POST /v2/aspect/param/batch-show` (`aspect_param_batch_show`): List aspect values by ids
+
+## Source
+
+Source stores of products and their rubrics.
+
+- `POST /v2/source/store-rubric/list` (`source_store_rubric_list`): List rubrics of a source store
+- `POST /v2/source/store/list` (`source_store_list`): List source stores
+
+## Content
+
+Articles, page templates and layouts of the site.
+
+- `POST /v2/content/article-type/list` (`content_article_type_list`): List article types
+- `POST /v2/content/article/activate` (`content_article_activate`): Activate an article
+- `POST /v2/content/article/create` (`content_article_create`): Create an article
+- `POST /v2/content/article/deactivate` (`content_article_deactivate`): Deactivate an article
+- `POST /v2/content/article/delete` (`content_article_delete`): Delete an article
+- `POST /v2/content/article/list` (`content_article_list`): List articles
+- `POST /v2/content/article/show` (`content_article_show`): Show an article
+- `POST /v2/content/article/update` (`content_article_update`): Update an article
+- `POST /v2/content/block/list` (`content_block_list`): List the blocks of the home page
+- `POST /v2/content/doc-template/create` (`content_doc_template_create`): Create a template
+- `POST /v2/content/doc-template/delete` (`content_doc_template_delete`): Delete a template
+- `POST /v2/content/doc-template/list` (`content_doc_template_list`): List templates
+- `POST /v2/content/doc-template/show` (`content_doc_template_show`): Show a template
+- `POST /v2/content/doc-template/update` (`content_doc_template_update`): Update a template
+- `POST /v2/content/tag/list` (`content_tag_list`): List article tags
+
+## Settings
+
+Settings (variables), variations, information and themes of the site.
+
+- `POST /v2/settings/info/show` (`settings_info_show`): Show site information
+- `POST /v2/settings/site-variation/list` (`settings_site_variation_list`): List site variations
+- `POST /v2/settings/site-variation/show` (`settings_site_variation_show`): Show a site variation
+- `POST /v2/settings/theme/create` (`settings_theme_create`): Create a theme
+- `POST /v2/settings/theme/delete` (`settings_theme_delete`): Delete a theme
+- `POST /v2/settings/theme/list` (`settings_theme_list`): List themes
+- `POST /v2/settings/theme/show` (`settings_theme_show`): Show a theme
+- `POST /v2/settings/theme/update` (`settings_theme_update`): Update a theme
+- `POST /v2/settings/variable/icon/list` (`settings_variable_icon_list`): List icons of settings
+- `POST /v2/settings/variable/list` (`settings_variable_list`): List settings
+- `POST /v2/settings/variable/reset` (`settings_variable_reset`): Reset settings
+- `POST /v2/settings/variable/rubric/list` (`settings_variable_rubric_list`): List rubrics of settings
+- `POST /v2/settings/variable/save` (`settings_variable_save`): Save settings
+- `POST /v2/settings/variable/show` (`settings_variable_show`): Show a setting
+- `POST /v2/settings/variable/twig-context` (`settings_variable_twig_context`): Show the template context of settings
+
+## Dictionary
+
+Reference data of the site: delivery countries, delivery methods, settlements.
+
+- `POST /v2/dictionary/city/search` (`dictionary_city_search`): Search settlements
+- `POST /v2/dictionary/country/list` (`dictionary_country_list`): List delivery countries
+- `POST /v2/dictionary/delivery-method/list` (`dictionary_delivery_method_list`): List delivery methods
+
+## Order
+
+The partner (site owner) places, pays from its deposit and cancels orders; a package gives the link to the passport form for the recipient.
+
+- `POST /v2/order/batch-show` (`order_batch_show`): List orders by ids
+- `POST /v2/order/cancel` (`order_cancel`): Cancel an order
+- `POST /v2/order/create` (`order_create`): Place an order
+- `POST /v2/order/list` (`order_list`): List orders of the site
+- `POST /v2/order/pay` (`order_pay`): Pay an order from the deposit
+- `POST /v2/order/show` (`order_show`): Show an order
+
+## Delivery
+
+Delivery cost and pick-up points for an order of the partner.
+
+- `POST /v2/delivery/calculate` (`delivery_calculate`): Calculate delivery
+- `POST /v2/delivery/pick-up-point/list` (`delivery_pick_up_point_list`): List pick-up points
+
+## Balance
+
+The deposit of the site owner.
+
+- `POST /v2/balance/operation/list` (`balance_operation_list`): List deposit operations
+- `POST /v2/balance/show` (`balance_show`): Show the deposit
+
+## Customer Auth
+
+A customer of the site signs in (with the site token) and resets the password; the issued customer token opens the other customer groups.
+
+- `POST /v2/customer-auth/confirm` (`customer_auth_confirm`): Confirm the sign-in or sign-up with the code
+- `POST /v2/customer-auth/guest` (`customer_auth_guest`): Get a guest token
+- `POST /v2/customer-auth/password/reset` (`customer_auth_password_reset`): Send a password reset link
+- `POST /v2/customer-auth/refresh` (`customer_auth_refresh`): Renew the customer token
+- `POST /v2/customer-auth/sign-in` (`customer_auth_sign_in`): Sign a customer in
+- `POST /v2/customer-auth/sign-out` (`customer_auth_sign_out`): Sign a customer out
+- `POST /v2/customer-auth/sign-up` (`customer_auth_sign_up`): Register a customer by email
+
+## Customer Account
+
+The profile and the addresses of a customer.
+
+- `POST /v2/customer-account/address/create` (`customer_account_address_create`): Add an address
+- `POST /v2/customer-account/address/delete` (`customer_account_address_delete`): Delete an address
+- `POST /v2/customer-account/address/list` (`customer_account_address_list`): List addresses
+- `POST /v2/customer-account/address/update` (`customer_account_address_update`): Update an address
+- `POST /v2/customer-account/password/update` (`customer_account_password_update`): Change the password
+- `POST /v2/customer-account/profile/delete` (`customer_account_profile_delete`): Delete the account
+- `POST /v2/customer-account/profile/show` (`customer_account_profile_show`): Show the profile
+- `POST /v2/customer-account/profile/update` (`customer_account_profile_update`): Update the profile
+
+## Customer Cart
+
+The cart and the checkout of a customer: items, delivery options, pick-up points.
+
+- `POST /v2/customer-cart/checkout/show` (`customer_cart_checkout_show`): Show the checkout
+- `POST /v2/customer-cart/checkout/update` (`customer_cart_checkout_update`): Save the checkout choice
+- `POST /v2/customer-cart/delivery-option/list` (`customer_cart_delivery_option_list`): List delivery options
+- `POST /v2/customer-cart/item/create` (`customer_cart_item_create`): Add an item to the cart
+- `POST /v2/customer-cart/item/delete` (`customer_cart_item_delete`): Remove items from the cart
+- `POST /v2/customer-cart/item/update` (`customer_cart_item_update`): Update a cart item
+- `POST /v2/customer-cart/pick-up-point/list` (`customer_cart_pick_up_point_list`): List pick-up points
+- `POST /v2/customer-cart/promo-code/apply` (`customer_cart_promo_code_apply`): Apply a promo code
+- `POST /v2/customer-cart/promo-code/delete` (`customer_cart_promo_code_delete`): Remove the promo code
+- `POST /v2/customer-cart/show` (`customer_cart_show`): Show the cart
+
+## Customer Order
+
+Orders of a customer: place from the cart, list, show the card with delivery and the payment link, cancel.
+
+- `POST /v2/customer-order/cancel` (`customer_order_cancel`): Cancel my order
+- `POST /v2/customer-order/create` (`customer_order_create`): Place the order
+- `POST /v2/customer-order/list` (`customer_order_list`): List my orders
+- `POST /v2/customer-order/show` (`customer_order_show`): Show my order

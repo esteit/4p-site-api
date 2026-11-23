@@ -1,0 +1,35 @@
+meta {
+  name: Update texts of a product
+  type: http
+  seq: 4
+  tags: [
+    Product
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/product/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_id": {{productId}},
+    "site_variation": "default",
+    "meta_title": "Buy the product with delivery",
+    "meta_robots": "index, follow"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Sets the name, description and SEO fields of a product of the site tree in the language of `site_variation`: the site texts take precedence over the common translation on the storefront and in `stock/product/show`. An omitted or `null` field stays as it is; an empty string (or only spaces) resets the field — the storefront shows the common translation or the original text again. Spaces around values are trimmed. `meta_robots` takes one of the four values the storefront understands. The description is HTML and is shown on the storefront as is, without sanitizing. Answers with all site texts of the product in this language; all languages — `product/text/show`. A product not in the site tree gives 404 (a product closed for the site can still get texts), no field at all — 422.
+}

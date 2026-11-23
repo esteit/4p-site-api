@@ -1,0 +1,30 @@
+meta {
+  name: List source stores
+  type: http
+  seq: 2
+  tags: [
+    Source
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/source/store/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Source stores available for mapping the catalogue of the site: their rubric trees are in `source/store-rubric/list`, products of a source rubric — `stock/product/id/list` with `store_id`. The body is an empty object.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Show a product
+  type: http
+  seq: 6
+  tags: [
+    Stock
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/stock/product/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_id": {{productId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  A product card of the site: name and description in the language of `site_variation` when translated (`locale`), `url` of the page on the site, main `image`, `min_price`, aspects with their `role` and variations. The price of a variation comes from the best active offer of the site for the country at the time of the request — the same offer `order/create` takes — and is the same as in `stock/list`. A product without `variations` (no variation has images and an offer) cannot be sold now: `available: false`, `min_price: null`. A variation that cannot be ordered has `available: false`, stock 0 and `unavailable_reason`; its price stays when there is an offer (`out_of_stock`, `price_over_limit`, `weight_over_limit`) and is `null` without one (`no_offer`). What is the same for all variations (`currency`, `url`, shared properties) is given once on the product. Money is a decimal string with 2 digits after the point (`"1990.00"`), country codes are ISO 3166-1 alpha-2 in upper case. A product of the site tree closed for the site (country, brand or rubric restrictions, a manual denial) comes with `closed: true` and no `variations`; a product not in the site tree gives 404.
+}

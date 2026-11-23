@@ -1,0 +1,37 @@
+meta {
+  name: List pick-up points
+  type: http
+  seq: 2
+  tags: [
+    Delivery
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/delivery/pick-up-point/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "delivery_method_id": {{pickUpDeliveryMethodId}},
+    "city_id": "{{cityId}}",
+    "product_variation_ids": [{{productVariationId}}],
+    "quantities": [1],
+    "page": 1,
+    "per_page": 20
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Active pick-up points of a pick-up delivery method in a settlement, paginated: the page is in `meta.pager`; the same point model as `customer-cart/pick-up-point/list`. `city_id` is the KLADR id from `dictionary/city/search`; points are taken in steps: the city, if it has none — its district, then its region (`city_id` of each point shows where it is). `min_latitude`, `min_longitude`, `max_latitude`, `max_longitude` narrow it to the frame of a map. With the cart (`product_variation_ids` and `quantities`, as `items` of `delivery/calculate`) each point of the page has `price` — what `order/create` with this `pick_up_point_id` charges for the delivery; without it `price` is `null`. Pass the chosen `id` as `pick_up_point_id` to `delivery/calculate` and `order/create`. A method that is not enabled on the site gives 422 `delivery-method-not-on-site`, a door method — 422 `pick-up-not-supported`, both with `pointer` `#/delivery_method_id`.
+}

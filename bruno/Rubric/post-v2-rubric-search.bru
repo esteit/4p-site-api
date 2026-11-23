@@ -1,0 +1,41 @@
+meta {
+  name: Search rubrics of the site
+  type: http
+  seq: 10
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/search
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": "",
+    "parent_id": null,
+    "with_descendants": false,
+    "max_level": null,
+    "active": null,
+    "partner_tag": null,
+    "non_empty": false,
+    "site_variation": null,
+    "page": 0,
+    "per_page": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Rubrics of the site tree with the text in the name, slug, translations, description or meta of the site, page by page, in the format of `rubric/list` and with its filters (`parent_id`, `with_descendants`, `max_level`, `active`, `partner_tag`, `non_empty`, `site_variation`).
+}

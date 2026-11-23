@@ -1,0 +1,40 @@
+meta {
+  name: List articles
+  type: http
+  seq: 3
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/article/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "site_variation": "default",
+    "active": null,
+    "slug": null,
+    "rubric_id": null,
+    "tag": null,
+    "query": null,
+    "has_text": null,
+    "sort": "published",
+    "direction": "desc",
+    "page": 1,
+    "per_page": 20
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Articles of the site page by page, with the meta and tags of the site variation, without the document (it is in `content/article/show`). All articles of the site are listed; `has_text` tells whether an article has its text in the variation (filter `has_text`). Filters `slug`, `rubric_id`, `tag`, `query` (part of the title) and `active` are combined; an empty string is no filter.
+}

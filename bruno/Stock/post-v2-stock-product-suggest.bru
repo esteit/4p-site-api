@@ -1,0 +1,33 @@
+meta {
+  name: Suggest products while typing
+  type: http
+  seq: 8
+  tags: [
+    Stock
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/stock/product/suggest
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": "nike",
+    "limit": 5
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Up to `limit` products for the search box while the customer types, by the same search as the storefront drop-down (name, brand, article; the search method of the site), in the format of `stock/product/show`. For the full result use `stock/product/search` with the same text. Fewer than 2 characters give 422.
+}

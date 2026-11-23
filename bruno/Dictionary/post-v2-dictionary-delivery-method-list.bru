@@ -1,0 +1,30 @@
+meta {
+  name: List delivery methods
+  type: http
+  seq: 3
+  tags: [
+    Dictionary
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/dictionary/delivery-method/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Delivery methods enabled on the site with destination countries (ISO 3166-1 alpha-2, upper case, only the delivery countries of the site). A method that delivers to none of them, or is switched off by 4Partners, is not listed. The list does not promise that a particular cart can be shipped: `delivery/calculate` prices the methods for the cart and omits the ones it cannot ship. Names are in the language of `site_variation`. A method with `with_pick_up_points` delivers to pick-up points: take one from `delivery/pick-up-point/list` and pass it as `pick_up_point_id` to `order/create` (when it may be omitted — see `order/create`).
+}

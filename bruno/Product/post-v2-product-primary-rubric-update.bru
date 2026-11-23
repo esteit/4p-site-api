@@ -1,0 +1,35 @@
+meta {
+  name: Set the main rubric of products
+  type: http
+  seq: 2
+  tags: [
+    Product
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/product/primary-rubric/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_ids": [
+      {{productId}}
+    ],
+    "rubric_id": {{rubricId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Makes an active rubric of the site tree the main rubric (breadcrumbs, «all products of the category», `item_category`) of up to 1000 products linked to it: the flag is removed from their other rubrics of the site. The main rubric changes at once; restrictions and the search index are updated in the background. Unlike `product/rubric/link`, the rubric must be active (422 `rubric-inactive`): the main rubric is shown on the storefront. Products not linked to the rubric are returned in `not_linked_product_ids` and not changed: link them with `product/rubric/link` first. Unknown product ids are returned in `rejected_product_ids`, as in `product/rubric/link`; a request without a single known product gives 422 `no-products-accepted`, a rubric not in the site tree — 422 `rubric-not-in-tree`.
+}

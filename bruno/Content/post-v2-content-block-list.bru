@@ -1,0 +1,32 @@
+meta {
+  name: List the blocks of the home page
+  type: http
+  seq: 15
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/block/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "article_type": "homepage"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Banner carousels and product sliders of the article of `article_type` (`homepage` by default — the home page; `slug` picks one of several articles), as edited in the storefront editor, in the order of the article: to build the home screen of an app. A slider comes with its products in the format of `stock/product/show` and the storefront address they are taken from (the «see all» link); a banner — with its pictures and link. Other editor blocks (text, HTML) are left out; for the whole page use `content/article/show`. No such article — `article_id: null` and no blocks.
+}

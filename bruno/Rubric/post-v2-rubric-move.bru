@@ -1,0 +1,34 @@
+meta {
+  name: Move a rubric
+  type: http
+  seq: 9
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/move
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0,
+    "parent_id": null,
+    "position": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Moves a rubric with its subtree under `parent_id` of the site tree, or to the root without it, to `position` among the new siblings (after the last one without it). Paths and levels of the subtree and `leaf` of both parents are recalculated; the request returns at once, and the links of the subtree products to the ancestors (added to the new ones, removed from the old ones unless the product has other links there) and the search index are recalculated in the background within minutes. With the same parent only `position` changes. A parent from the subtree of the rubric gives 422, a parent not in the site tree — 422 `rubric-not-in-tree`.
+}

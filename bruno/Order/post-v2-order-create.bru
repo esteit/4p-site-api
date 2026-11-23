@@ -1,0 +1,58 @@
+meta {
+  name: Place an order
+  type: http
+  seq: 3
+  tags: [
+    Order
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/order/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "recipient": {
+      "name": "Ivan",
+      "surname": "Petrov",
+      "phone": "79991234567",
+      "email": "ivan.petrov@example.com",
+      "country": "RU",
+      "city_id": "{{cityId}}",
+      "city": "Москва",
+      "street": "Тверская",
+      "house": "1",
+      "flat": "1",
+      "zip": "125009"
+    },
+    "items": [
+      {
+        "product_variation_id": {{productVariationId}},
+        "quantity": 1
+      }
+    ],
+    "delivery_method_id": {{deliveryMethodId}},
+    "external_id": "bruno-example-1"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.order) {
+    bru.setVar("orderId", res.body.data.order.id);
+  }
+}
+
+tests {
+  test("201 for a new order, 200 for a repeat with the same external_id", function () {
+    expect([200, 201]).to.include(res.getStatus());
+    expect(res.body.data.order.id).to.be.a("number");
+    expect(res.body.data.replayed).to.equal(res.getStatus() === 200);
+  });
+}
+
+docs {
+  Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same body returns the order already created with status 200 and `replayed: true`, even after the subscription has expired; a different body gives 409 `/api/problems/external-id-conflict`. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; an expired subscription of the site owner gives 403 `/api/problems/subscription-expired` (see `subscription_paid_until` of `settings/info/show`).
+}

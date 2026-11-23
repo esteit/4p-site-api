@@ -1,0 +1,38 @@
+meta {
+  name: Save settings
+  type: http
+  seq: 9
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/variable/save
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "site_variation": "default",
+    "variables": [
+      {
+        "code": "is_show_out_of_stock_products",
+        "value": true
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Saves values of settings in a site variation as one batch: all or none. A hidden setting gives 404, a read-only one or a value that does not pass the check — 422 with `pointer` to the item; a numeric setting takes only a number (`15`, `12.5`). A mask of a secret is skipped (`skipped: true`). A theme of the storefront is chosen with `default_theme` (`{"themeId": <id of settings/theme/list>}`).
+}

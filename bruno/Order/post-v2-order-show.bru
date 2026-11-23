@@ -1,0 +1,32 @@
+meta {
+  name: Show an order
+  type: http
+  seq: 6
+  tags: [
+    Order
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/order/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "order_id": {{orderId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  An order of the site with packages and items. An unpaid order that is not canceled has `deposit_due`: what `order/pay` would charge from the deposit now, delivery included. A package that needs the passport of the recipient has `passport_status` and `passport_link`: send the link to the recipient, the passport is filled in only by the form. An order of another site gives 404.
+}

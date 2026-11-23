@@ -1,0 +1,38 @@
+meta {
+  name: List orders of the site
+  type: http
+  seq: 4
+  tags: [
+    Order
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/order/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "status": null,
+    "source": null,
+    "external_id": null,
+    "date_from": null,
+    "date_to": null,
+    "page": 0,
+    "per_page": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Orders placed by the partner and by customers of the site, newest first, paginated: the page is in `meta.pager`. Abandoned carts are not orders and are not listed. `external_id` finds the orders placed with this id, canceled ones included. `deposit_due` is `null` here: it is calculated only by `order/show` and `order/create`.
+}

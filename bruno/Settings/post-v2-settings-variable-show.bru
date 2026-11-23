@@ -1,0 +1,34 @@
+meta {
+  name: Show a setting
+  type: http
+  seq: 7
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/variable/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "code": "is_show_out_of_stock_products",
+    "site_variation": "default",
+    "with_translations": true
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  A setting of the site available to the partner, texts in the language of `site_variation`. A hidden one gives 404.
+}

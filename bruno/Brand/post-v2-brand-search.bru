@@ -1,0 +1,35 @@
+meta {
+  name: Search brands
+  type: http
+  seq: 5
+  tags: [
+    Brand
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/brand/search
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": null,
+    "active": null,
+    "page": 0,
+    "per_page": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Brands visible to the site with the text in the name, slug, synonyms or the site texts `h1`, `meta_title`, `meta_keywords`, page by page (`meta.pager`). Finds brands without products on the site and brands hidden by the partner too (`active`). Order: brands whose name starts with the text, then brands with products on the site, then the rest, each by name. Without `query` — all brands visible to the site in this order. `product_count` — products in the default variation, in stock; 0 without products.
+}

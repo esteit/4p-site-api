@@ -1,0 +1,40 @@
+meta {
+  name: Add an item to the cart
+  type: http
+  seq: 1
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/item/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "product_variation_id": {{productVariationId}},
+    "quantity": 1
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.items.length) {
+    const item = res.body.data.items.find((i) => i.product_variation_id === Number(bru.getEnvVar("productVariationId"))) || res.body.data.items[0];
+    bru.setVar("cartItemId", item.id);
+  }
+}
+
+docs {
+  Puts the variation into the cart with the given quantity; the cart is created with the first item, the cart takes the best offer of the site itself. A variation not sold on the site, without stock or not delivered by the tariff of the site gives 422 with `pointer` on `product_variation_id`; a quantity above the stock gives 422 on `quantity` with the stock in `detail`.
+}

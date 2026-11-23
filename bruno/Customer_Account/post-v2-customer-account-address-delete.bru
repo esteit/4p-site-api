@@ -1,0 +1,28 @@
+meta {
+  name: Delete an address
+  type: http
+  seq: 7
+  tags: [
+    Customer_Account
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-account/address/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "address_id": {{addressId}}
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Removes the address from the address book. An address of another customer gives 404.
+}

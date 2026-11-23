@@ -1,0 +1,28 @@
+meta {
+  name: Delete a rubric
+  type: http
+  seq: 7
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Deletes a rubric without child rubrics together with its product links, translations and SEO; the parent becomes a leaf when it was the last child. The products of the rubric get their main rubric, restrictions and search index recalculated in the queue within minutes. A rubric with children gives 409: move or delete them first. A rubric used by settings of the platform (banners, brand and supplier lists of the rubric, filters, exports) gives 409 `rubric-in-use` listing them: turn it off with `rubric/deactivate` instead.
+}

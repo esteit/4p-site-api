@@ -1,0 +1,28 @@
+meta {
+  name: Delete the account
+  type: http
+  seq: 8
+  tags: [
+    Customer_Account
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-account/profile/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "confirm": true
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Deletes the account of the customer of the token, as app stores require: the phone and the email are removed and become free for a new registration, the customer is disabled and every customer token and refresh token stops working at once. Orders stay with the store for delivery and accounting. Pass `confirm: true`; it cannot be undone.
+}

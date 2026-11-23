@@ -1,0 +1,33 @@
+meta {
+  name: List my orders
+  type: http
+  seq: 3
+  tags: [
+    Customer_Order
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-order/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "status": "new",
+    "page": 1,
+    "per_page": 20
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.error: eq false
+  res.body.data: isArray
+  res.body.meta.pager: isDefined
+}
+
+docs {
+  Orders of the customer on the site, newest first, paginated: the page is in `meta.pager`. Each order is the card of `customer-order/show`: delivery, address and recipient of the packages, payment method, `payment_url` of an unpaid order, item images, `status_history`. `status` filters by one status; an unknown status gives 422. Names of delivery and payment methods are in the language of `site_variation`.
+}

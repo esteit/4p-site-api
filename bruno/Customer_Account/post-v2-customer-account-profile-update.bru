@@ -1,0 +1,33 @@
+meta {
+  name: Update the profile
+  type: http
+  seq: 2
+  tags: [
+    Customer_Account
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-account/profile/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "first_name": "Ivan",
+    "gender": "male"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Name, birth date, gender, city and default address. An email can only be added when the customer has none and it is free on the site (the confirmation email is sent in the background); changing an existing email gives 422. The password is changed with `customer-account/password/update`.
+}

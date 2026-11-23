@@ -1,0 +1,40 @@
+meta {
+  name: Sign a customer in
+  type: http
+  seq: 2
+  tags: [
+    Customer_Auth
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-auth/sign-in
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "customer@example.com",
+    "password": "secret-password"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.token) {
+    bru.setVar("customerToken", res.body.data.token);
+    bru.setVar("customerRefreshToken", res.body.data.refresh_token);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  By `phone` an SMS code is sent and `confirmation_id` is returned: finish with `customer-auth/confirm`. By `email` and `password` of a registered customer the tokens are returned at once; a new customer registers with `customer-auth/sign-up`. An unknown email, a disabled customer and a wrong password give the same 401. After 5 attempts for an email without a success within 15 minutes sign-in by it is locked: 429 `sign-in-locked` with `Retry-After`; after 300 failed sign-ins and codes through one site token within 15 minutes — for every customer of that token.
+}

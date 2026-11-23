@@ -1,0 +1,28 @@
+meta {
+  name: Delete a template
+  type: http
+  seq: 14
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/doc-template/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "template_id": {{templateId}}
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Deletes a template of the site; rubrics and brands it was assigned to lose the assignment. A shared template gives 409 (it is read-only), a template of another site — 404.
+}

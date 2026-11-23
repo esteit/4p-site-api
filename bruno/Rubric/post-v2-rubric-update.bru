@@ -1,0 +1,71 @@
+meta {
+  name: Update a rubric
+  type: http
+  seq: 12
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0,
+    "name": null,
+    "slug": null,
+    "position": null,
+    "context": null,
+    "partner_tag": null,
+    "banned": null,
+    "selection": null,
+    "in_top_menu": null,
+    "in_all_menu": null,
+    "in_footer_menu": null,
+    "unfold": null,
+    "unfold_count": null,
+    "auto_landing": null,
+    "auto_landing_expand": null,
+    "auto_landing_on_index": null,
+    "auto_landing_in_catalog": null,
+    "doc_template_id": null,
+    "layout_template_id": null,
+    "translations": [
+      {
+        "locale": "",
+        "name": null,
+        "full_name": null,
+        "what_phrase": null,
+        "phrase1": null,
+        "phrase2": null,
+        "phrase10": null
+      }
+    ],
+    "seo": [
+      {
+        "site_variation": "",
+        "description": null,
+        "meta_title": null,
+        "meta_description": null,
+        "meta_keywords": null,
+        "meta_robots": null
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Changes the given fields of a rubric of the site tree: an omitted or null field stays as it is, an empty string clears a text (translations, `seo`, `context`) and `partner_tag` removes the tag. Translations and SEO change per locale and variation. A blank name, a slug not of lowercase Latin letters, digits and hyphens, or a taken slug gives 422 with `pointer`; so does a locale or variation of another site. To move a rubric use `rubric/move`.
+}

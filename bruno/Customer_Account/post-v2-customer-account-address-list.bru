@@ -1,0 +1,30 @@
+meta {
+  name: List addresses
+  type: http
+  seq: 4
+  tags: [
+    Customer_Account
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-account/address/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Addresses of the customer in the order they were added. Pass `id` as `address_id` to the checkout.
+}

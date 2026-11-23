@@ -1,0 +1,33 @@
+meta {
+  name: List article tags
+  type: http
+  seq: 2
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/tag/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "site_variation": "default",
+    "rubric_ids": [
+      {{rubricId}}
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Public tags of the articles of the site in a site variation, by name, with the number of articles; with `rubric_ids` — only tags of articles linked to any of these rubrics (a rubric not of the site tree — 422 `rubric-not-in-tree`). Use a tag as `tag` of `content/article/list`.
+}

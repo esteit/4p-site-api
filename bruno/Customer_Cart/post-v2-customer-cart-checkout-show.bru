@@ -1,0 +1,30 @@
+meta {
+  name: Show the checkout
+  type: http
+  seq: 6
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/checkout/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Selected cart items split into packages by warehouse with delivery methods, payment methods, the chosen address and totals. Prices and delivery are for the country of the chosen address. A package with a pick-up method gets no point silently: until `pick_up_point_id` is chosen it is `available: false` (`pick_up_point_required`) and `deliverable` is false. An empty cart gives 422.
+}

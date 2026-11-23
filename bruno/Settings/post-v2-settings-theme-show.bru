@@ -1,0 +1,32 @@
+meta {
+  name: Show a theme
+  type: http
+  seq: 13
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/theme/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "theme_id": {{themeId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  A theme of the site or a shared one with `vars` and `styles`. A theme of another site gives 404.
+}

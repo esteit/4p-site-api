@@ -1,0 +1,46 @@
+meta {
+  name: Update texts of a brand
+  type: http
+  seq: 7
+  tags: [
+    Brand
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/brand/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "brand_id": 0,
+    "translations": [
+      {
+        "locale": "",
+        "h1": null,
+        "description": null,
+        "short_description": null,
+        "meta_title": null,
+        "meta_description": null,
+        "meta_keywords": null,
+        "meta_robots": null
+      }
+    ],
+    "doc_template_id": null,
+    "layout_template_id": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Changes texts of the brand on the site by locale and its templates. An omitted or `null` field stays as it is; an empty string (or only spaces) resets the text to `null`; spaces around values are trimmed. `doc_template_id`/`layout_template_id` 0 removes the assignment. The description is HTML and is shown on the storefront as is, without sanitizing. The shared brand catalogue does not change; the cache of the site is reset, so the storefront shows the new texts at once. Each locale at most once in `translations`; a locale of another site or a repeated one gives 422 at `#/translations/<i>/locale`, a template of another site or of a wrong kind — 422 at its field, no text and no template — 422.
+}

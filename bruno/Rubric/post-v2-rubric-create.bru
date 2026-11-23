@@ -1,0 +1,71 @@
+meta {
+  name: Create a rubric
+  type: http
+  seq: 5
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "",
+    "parent_id": null,
+    "slug": null,
+    "position": null,
+    "context": null,
+    "partner_tag": null,
+    "banned": null,
+    "selection": null,
+    "in_top_menu": null,
+    "in_all_menu": null,
+    "in_footer_menu": null,
+    "unfold": null,
+    "unfold_count": null,
+    "auto_landing": null,
+    "auto_landing_expand": null,
+    "auto_landing_on_index": null,
+    "auto_landing_in_catalog": null,
+    "doc_template_id": null,
+    "layout_template_id": null,
+    "translations": [
+      {
+        "locale": "",
+        "name": null,
+        "full_name": null,
+        "what_phrase": null,
+        "phrase1": null,
+        "phrase2": null,
+        "phrase10": null
+      }
+    ],
+    "seo": [
+      {
+        "site_variation": "",
+        "description": null,
+        "meta_title": null,
+        "meta_description": null,
+        "meta_keywords": null,
+        "meta_robots": null
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Creates a rubric in the site tree under `parent_id` (a root without it) with translations, description and meta of the site variations, templates and menu flags. The new rubric is active and shown on the site at once: to fill it before showing, call `rubric/deactivate` right after creation. Without `position` it goes after the last sibling. A slug is made from the name and a taken one gets a numeric suffix (`-two`); a name without Latin letters or digits after transliteration (`!!!`) needs `slug`. A given `slug` must be lowercase Latin letters and digits separated by hyphens; a taken one gives 422. A `parent_id` not in the site tree gives 422 `rubric-not-in-tree`.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: List article types
+  type: http
+  seq: 1
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/article-type/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Types of service pages and the article of the site that has each type now (`article_id`, `null` — the storefront shows its default page). A type belongs to one article of the site: `content/article/update` with `article_type_id` moves it, `0` removes it; an article with a type cannot be deleted.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Sign a customer out
+  type: http
+  seq: 5
+  tags: [
+    Customer_Auth
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-auth/sign-out
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "refresh_token": "{{customerRefreshToken}}"
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Ends the sign-in of the refresh token: its customer token and refresh token stop working at once. The answer is the same for an expired, already ended or unknown token.
+}

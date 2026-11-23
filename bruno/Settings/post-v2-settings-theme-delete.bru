@@ -1,0 +1,28 @@
+meta {
+  name: Delete a theme
+  type: http
+  seq: 15
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/theme/delete
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "theme_id": {{themeId}}
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  Deletes a theme of the site. A shared theme or a theme of another site gives 404.
+}

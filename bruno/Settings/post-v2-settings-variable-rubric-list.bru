@@ -1,0 +1,32 @@
+meta {
+  name: List rubrics of settings
+  type: http
+  seq: 4
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/variable/rubric/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "site_variation": "default"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  The tree of rubrics (sections and groups) that settings belong to (`rubric_id` of `settings/variable/list`), parents before children, names in the language of `site_variation`. The tree is the same for every site.
+}

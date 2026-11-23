@@ -1,0 +1,26 @@
+meta {
+  name: Show site information
+  type: http
+  seq: 1
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/info/show
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  The site of the token: domain, email, until when the subscription of the site owner is paid (`order/create` needs it), rules of AI texts, names and phones by site variation (`site_variations`), whether the storefront shows products without stock (`shows_out_of_stock_products`).
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Deactivate an article
+  type: http
+  seq: 7
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/article/deactivate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "article_id": {{articleId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Hides the article from the lists and menus of the site (`active: false`), in all variations. The page itself stays available by its direct `url`: to remove it, delete the article. The response is the article in `site_variation`.
+}

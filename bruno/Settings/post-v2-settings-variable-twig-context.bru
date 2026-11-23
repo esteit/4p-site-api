@@ -1,0 +1,32 @@
+meta {
+  name: Show the template context of settings
+  type: http
+  seq: 8
+  tags: [
+    Settings
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/settings/variable/twig-context
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "site_variation": "default"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  What a `twig` setting can use in its template: types of the context with fields and methods, and Twig filters. A setting starts from its `twig_type` (`settings/variable/list`): `{{ productName }}` for `ProductPageTpl`; `type` of a member names the next type. Descriptions are in the language of `site_variation` (Russian if there is no text in it).
+}

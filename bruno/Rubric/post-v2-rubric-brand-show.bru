@@ -1,0 +1,33 @@
+meta {
+  name: Show a brand in a rubric
+  type: http
+  seq: 3
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/brand/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0,
+    "brand_id": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  The page of the brand in a rubric of the site tree with its texts: one entry for each language of the site, a field without a text is null (the storefront then shows its own text). A `rubric_id` not in the site tree gives 422 `rubric-not-in-tree`, a brand closed for the site — 404.
+}

@@ -1,0 +1,55 @@
+meta {
+  name: Create an article
+  type: http
+  seq: 4
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/article/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Bruno example article",
+    "doc_type": "html",
+    "html": "<h1>Bruno example</h1><p>Created from the collection.</p>",
+    "publish_date": "2026-11-05T10:00:00+03:00",
+    "active": false,
+    "meta_title": "Bruno example",
+    "meta_robots": "noindex, follow",
+    "rubric_ids": [
+      {{rubricId}}
+    ],
+    "tags": [
+      "bruno-example"
+    ],
+    "site_variation": "default"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data) {
+    bru.setVar("articleId", res.body.data.id);
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+tests {
+  test("publish date keeps the moment in the platform time zone", function () {
+    expect(new Date(res.body.data.publish_date).getTime()).to.equal(new Date("2026-11-05T10:00:00+03:00").getTime());
+  });
+}
+
+docs {
+  Creates an article of the site with its text in a site variation and publishes it at once (`active` defaults to `true`; pass `false` to prepare a draft). `doc_type` `html` (default) takes the document in `html`, `styles`, `scripts`, `settings`, `context`; `doc_type` `markdown` takes the source in `markdown` and builds the HTML from it. Rubrics and rubrics of `tags_relink` must be of the site tree (422 `rubric-not-in-tree` on the item), products and brands of `tags_relink` must exist; repeats in the lists are dropped. A taken `slug` gives 422 on `slug`. Nothing is written when any check fails. Other variations get their text with `content/article/update`.
+}

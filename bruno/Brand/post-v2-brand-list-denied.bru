@@ -1,0 +1,33 @@
+meta {
+  name: List brands hidden on the site
+  type: http
+  seq: 4
+  tags: [
+    Brand
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/brand/list-denied
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "page": 0,
+    "per_page": 0
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Brands hidden by the partner with `brand/deactivate`, by id, page by page (`meta.pager`). They are not in `brand/list`; `product_count` is null: products of a hidden brand are not on the site. Show a brand again — `brand/activate`.
+}

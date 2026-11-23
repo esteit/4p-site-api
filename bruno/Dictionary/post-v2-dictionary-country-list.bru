@@ -1,0 +1,32 @@
+meta {
+  name: List delivery countries
+  type: http
+  seq: 2
+  tags: [
+    Dictionary
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/dictionary/country/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "site_variation": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Countries the site of the token delivers to, in the order of the site settings: ISO 3166-1 alpha-2 code in upper case and the name in the language of `site_variation`. Pass the code as `country` to delivery and order methods.
+}

@@ -1,0 +1,33 @@
+meta {
+  name: List filter aspects of a rubric
+  type: http
+  seq: 2
+  tags: [
+    Rubric
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/rubric/aspect/list
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "rubric_id": 0,
+    "site_variation": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Aspects used as filters of a rubric of the site tree, in the order of the rubric filters, in the format of `aspect/batch-show`. Inactive and deleted aspects are left out. A rubric that is not in the site tree gives 422 `rubric-not-in-tree` with `pointer` `#/rubric_id`, as `rubric_id` of `stock/*`. The values with the number of products — `stock/facet/list` with this `rubric_id`.
+}

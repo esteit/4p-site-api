@@ -1,0 +1,30 @@
+meta {
+  name: Show the deposit
+  type: http
+  seq: 1
+  tags: [
+    Balance
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/balance/show
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Available deposit of the site owner in every deposit currency: the sum of the operations of `balance/operation/list` in that currency. The body is an empty object.
+}

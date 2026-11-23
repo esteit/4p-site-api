@@ -1,0 +1,31 @@
+meta {
+  name: Update a template
+  type: http
+  seq: 13
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/doc-template/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "template_id": {{templateId}},
+    "name": "Bruno example layout 2"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Changes the given fields of a template of the site; an omitted or `null` field stays as it is, `context` is replaced as a whole. A shared template gives 409 (it is read-only: create your own), a template of another site — 404. The `kind` of a template assigned to rubrics or brands cannot be changed: 409 lists the assignments. A layout keeps `{{ content }}` in `html` (422).
+}
