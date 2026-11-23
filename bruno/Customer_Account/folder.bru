@@ -1,5 +1,6 @@
 meta {
   name: Customer_Account
+  seq: 14
 }
 
 auth {
@@ -21,4 +22,5 @@ docs {
   2. `Add an address` → `addressId` (used by `Customer_Cart / Choose the address`); `List addresses`, `Update an address`.
   3. `Change the password` — `customerPassword` and `customerNewPassword` are runtime variables you set; the answer replaces `customerToken`.
   4. `Delete an address` — cleanup, after `Customer_Order`.
+  5. `Delete the account` — sent as is, `confirm: false` gives 422; with `true` the customer is deleted for good.
 }

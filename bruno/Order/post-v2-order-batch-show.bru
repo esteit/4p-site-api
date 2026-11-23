@@ -1,7 +1,7 @@
 meta {
   name: List orders by ids
   type: http
-  seq: 1
+  seq: 5
   tags: [
     Order
   ]
@@ -16,7 +16,7 @@ post {
 body:json {
   {
     "order_ids": [
-      0
+      {{orderId}}
     ]
   }
 }

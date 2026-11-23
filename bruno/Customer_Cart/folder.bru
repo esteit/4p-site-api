@@ -1,5 +1,6 @@
 meta {
   name: Customer_Cart
+  seq: 15
 }
 
 auth {
@@ -15,15 +16,14 @@ auth:apikey {
 docs {
   Requests of a signed-in customer: the customer token goes to `X-Customer-Auth-Token`. Get it with `Customer_Auth` sign-in or confirm. A guest token (`Customer_Auth / guest`) opens only `Show the cart` and the item requests.
 
-  A promo code: `Apply a promo code` after the address is chosen — `promo_code`, `promo_discount` and the discounted `total` come in the checkout; `Remove the promo code` drops it.
-  
   Scenario, in `seq` order (runtime variables are saved by the requests):
   
   1. `Add an item to the cart` — `productVariationId` of the environment → `cartItemId`.
   2. `Show the cart`, `Update a cart item` — prices, stock (`available_quantity`), quantity.
-  3. `List delivery options` — a preview before an address is chosen.
-  4. `Choose the address` — `addressId` from `Customer_Account / Add an address` → `packageId`, `pickUpDeliveryMethodId`.
+  3. `Choose the address` — `addressId` from `Customer_Account / Add an address` → `packageId`, `pickUpDeliveryMethodId`.
+  4. `List delivery options` for the chosen address.
   5. `Show the checkout` — packages, methods, payment, `deliverable`.
   6. `List pick-up points` → `pickUpPointId`; `Choose the delivery and the pick-up point`.
-  7. `Customer_Order / Place the order`, then cancel it there; `Remove items from the cart` cleans up.
+  7. `Apply a promo code` — `promo_code`, `promo_discount` and the discounted `total` come in the checkout; `Remove the promo code` drops it. `SALE10` is an example: put a code of your site.
+  8. `Customer_Order / Place the order`. `Remove items from the cart` empties the cart: skip it when you go on to `Customer_Order`.
 }

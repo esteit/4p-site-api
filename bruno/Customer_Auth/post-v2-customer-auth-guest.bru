@@ -1,7 +1,7 @@
 meta {
   name: Get a guest token
   type: http
-  seq: 7
+  seq: 1
   tags: [
     Customer_Auth
   ]
@@ -23,6 +23,12 @@ assert {
   res.body.error: isDefined
   res.body.data: isDefined
   res.body.meta: isDefined
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.token) {
+    bru.setVar("guestToken", res.body.data.token);
+  }
 }
 
 docs {

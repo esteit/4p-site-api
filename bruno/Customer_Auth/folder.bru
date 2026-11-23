@@ -1,5 +1,6 @@
 meta {
   name: Customer_Auth
+  seq: 13
 }
 
 auth {
@@ -13,5 +14,5 @@ docs {
   2. A registered customer: `sign-in` with email and password (tokens at once) or with phone → SMS code → `confirm`.
   3. `customerToken` (an hour) goes to `X-Customer-Auth-Token` of `Customer_*`; when it expires — `refresh` with `customerRefreshToken` (one-time, 30 days).
   4. `sign-out` with `customerRefreshToken` ends the sign-in.
-  5. A guest without an account: `guest` → a guest token for `Customer_Cart` show and items (90 days). Before an order the guest signs in or up with a code (`sign-in` by phone or `sign-up` without a password, then `confirm`) passing `guest_token`: the guest cart moves to the customer.
+  5. A guest without an account: `Get a guest token` (first in the folder) saves `guestToken`: a guest token for `Customer_Cart` show and items (90 days). Before an order the guest signs in or up with a code (`sign-in` by phone or `sign-up` without a password, then `confirm`) passing `guest_token`: add `"guest_token": "{{guestToken}}"` to the body of `confirm` (or of `sign-in` by email) and the guest cart moves to the customer.
 }

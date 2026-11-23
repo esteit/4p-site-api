@@ -3481,7 +3481,7 @@ Body:
 - `guest_token` (string or null, length ≤ 2000): Current guest token to renew: the new token keeps its cart. Leave it out for a new guest with an empty cart.
 
 Response 200, `data`:
-- `token` (string): Guest token for `X-Customer-Auth-Token`: opens `customer-cart/show` and `customer-cart/item/*`, valid for `expires_in` seconds. Pass it as `guest_token` to `customer-auth/sign-in`, `sign-up` or `confirm` to keep the cart.
+- `token` (string): Guest token for `X-Customer-Auth-Token`: opens `customer-cart/show` and `customer-cart/item/*`, valid for `expires_in` seconds. Pass it as `guest_token` to `customer-auth/confirm` (after `sign-in` by phone or `sign-up`) or to `customer-auth/sign-in` by email and password to keep the cart.
 - `expires_in` (integer): Seconds the guest token is valid; renew it before with `customer-auth/guest` and the guest token.
 
 Errors:
@@ -4249,7 +4249,7 @@ Errors:
 
 `POST /v2/customer-cart/promo-code/delete` · `customer_cart_promo_code_delete` · token: customer (`X-Customer-Auth-Token`)
 
-Removes the applied promo code from the checkout; without a code nothing changes. Returns the recalculated checkout.
+Removes the applied promo code from the checkout; without a code nothing changes. An empty cart gives 422, as `customer-cart/checkout/show`. Returns the recalculated checkout.
 
 Body:
 - `site_variation` (string or null, length ≤ 50): Site variation code (`settings/site-variation/list`): language, country and currency of prices; the default variation if omitted.
