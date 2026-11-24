@@ -2361,7 +2361,7 @@ Response 200, `data`:
 - `id` (integer): Site id.
 - `domain` (string): Domain.
 - `email` (string): Contact email.
-- `subscription_paid_until` (string or null): Until when the subscription of the site owner is paid; `null` — no paid subscription. Without a paid subscription `order/create` gives 403 `/api/problems/subscription-expired`.
+- `subscription_paid_until` (string or null): Until when the subscription of the site owner is paid; `null` — no paid subscription. For information: Site API v2 does not check it.
 - `shows_out_of_stock_products` (boolean): The storefront of the site shows products without stock (setting `is_show_out_of_stock_products`). When false, `in_stock: false` of `stock/product/search` and `stock/facet/list` finds the same products as `in_stock: true`: the site hides products that are out of stock by the search index.
 - `ai_rules` (array of string): Rules of the master prompt for AI texts.
 - `site_variations` (array of object): Names and phones by site variation (`code` — `site_variation` of other operations).
@@ -3018,7 +3018,7 @@ Errors:
 
 `POST /v2/order/create` · `order_create` · token: site (`X-Auth-Token`)
 
-Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same body returns the order already created with status 200 and `replayed: true`, even after the subscription has expired; a different body gives 409 `/api/problems/external-id-conflict`. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; an expired subscription of the site owner gives 403 `/api/problems/subscription-expired` (see `subscription_paid_until` of `settings/info/show`).
+Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; an offer whose supplier does not pass stock (`quantity: 99` in `stock/*`) is not limited; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same body returns the order already created with status 200 and `replayed: true`; a different body gives 409 `/api/problems/external-id-conflict`. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; a site owner not allowed to place orders on the site gives 403 `/api/problems/owner-not-allowed`.
 
 Body:
 - `recipient` (object, required): Recipient and delivery address.
@@ -3508,7 +3508,7 @@ Errors:
 - 401: `/api/problems/unauthorized`
 - 403: `/api/problems/site-token-required`, `/api/problems/forbidden`
 - 422: `/api/problems/validation-error`, `/api/problems/business-rule`
-- 429: `/api/problems/too-many-requests`
+- 429: `/api/problems/sign-in-locked`, `/api/problems/too-many-requests`
 
 ### Renew the customer token
 
@@ -3599,7 +3599,7 @@ Errors:
 - 401: `/api/problems/unauthorized`
 - 403: `/api/problems/site-token-required`, `/api/problems/forbidden`
 - 422: `/api/problems/validation-error`, `/api/problems/business-rule`
-- 429: `/api/problems/too-many-requests`
+- 429: `/api/problems/sign-in-locked`, `/api/problems/too-many-requests`
 
 ## Customer Account
 

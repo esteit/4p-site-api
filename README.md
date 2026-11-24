@@ -11,7 +11,7 @@ orders of the site, content and settings.
 - Error types: <https://api.4partners.io/api/problems>
 
 This repository is updated automatically after each release of the API. AI agents that work with the API for you
-start with [`AGENTS.md`](AGENTS.md).
+start with [`AGENTS.md`](AGENTS.md).mPDF
 
 ## Requests and responses
 
@@ -40,8 +40,9 @@ curl -X POST https://api.4partners.io/v2/stock/product/show \
   lists every wrong value in `errors` with `pointer` and `detail`. `type` is a link: open
   `https://api.4partners.io/api/problems/<slug>` for its meaning and the fix. Quote `request_id` (also in the
   `X-Request-Id` header) when you contact 4Partners support.
-- **Rate limit.** 600 requests per minute, sliding window, for each operation group. The limit is counted per site,
-  and all tokens of the site share one counter; in the customer groups it is counted per customer. The state is in
+- **Rate limit.** 600 requests per minute, sliding window, for each operation group. With a server key the limit is
+  counted per site, and all server keys of the site share one counter. With an app key it is counted per key and
+  client IP address. In the customer groups it is counted per customer. The state is in
   `meta.usage` (`limit`, `used`, `remaining`, `retry_after`) and in the `X-RateLimit-*` headers. Over the limit the
   answer is 429 with `Retry-After`. Batch operations (`stock/product/batch-show`, `stock/list`,
   `order/batch-show`) save requests.
@@ -51,16 +52,25 @@ curl -X POST https://api.4partners.io/v2/stock/product/show \
 
 ## Access
 
-**Site token**, header `X-Auth-Token`. It is issued in the 4Partners partner account. It opens every operation
-except the customer groups.
+**Site key**, header `X-Auth-Token`. A site has two kinds of keys. Ask your 4Partners manager for a server key or an
+app key.
+
+- **Server key.** It opens every operation except the customer groups: orders, the deposit, products, content and
+  settings.
+- **App key.** It opens only the storefront and customer sign-in: reading `stock/*`, rubrics, brands, aspects,
+  content blocks, articles, tags and article types, `settings/site-variation/list` and `show`, `dictionary/*`,
+  `delivery/calculate`, `delivery/pick-up-point/list` and `customer-auth/*`. Other site operations give
+  403 `site-token-required`; its `detail` says that the operation needs a server key. The limit of requests is counted
+  per key and client IP address. An app key sends at most 10 SMS codes, sign-up codes and password reset links in total
+  per hour from one IP address; over the limit the answer is 429 `sign-in-locked` with `Retry-After`.
 
 > [!WARNING]
-> The site token gives full access to the site: orders, the deposit, products, content and settings. Keep it on
+> The server key gives full access to the site: orders, the deposit, products, content and settings. Keep it on
 > your server. Do not put it into a mobile app, browser code or any other client: your app calls your server, and
-> your server calls the API.
+> your server calls the API. A mobile app or browser code that calls the API directly uses an app key.
 
 **Customer token**, header `X-Customer-Auth-Token`. It opens `customer-account/*`, `customer-cart/*` and
-`customer-order/*`. Your server gets it from `customer-auth/*` with the site token:
+`customer-order/*`. Your server or app gets it from `customer-auth/*` with a site key, server or app:
 
 - `customer-auth/sign-in` by `email` and `password` returns the tokens at once. By `phone` it sends an SMS code and
   returns `confirmation_id`; `customer-auth/confirm` exchanges it and the code for the tokens.
@@ -68,7 +78,7 @@ except the customer groups.
 - The customer token is valid for an hour. `customer-auth/refresh` exchanges the refresh token (one-time, 30 days)
   for a new pair. A refresh token used twice ends the whole sign-in, so do not share it between parallel requests.
 - `customer-auth/sign-out` with the refresh token ends the sign-in. A password change or reset and disabling the
-  site token that issued the customer token also end it.
+  site key that issued the customer token also end it.
 
 **Guest token**, the same header `X-Customer-Auth-Token`. `customer-auth/guest` issues it for a customer without
 an account. It opens only `customer-cart/show` and `customer-cart/item/*`; other customer operations give 403. The
@@ -76,8 +86,8 @@ cart lives as long as the token, 90 days: call `customer-auth/guest` with `guest
 it and keep the cart. To place an order, the guest signs in or up with a code and passes `guest_token` to
 `customer-auth/confirm` (or to `customer-auth/sign-in` by email and password): the guest cart moves to the customer.
 
-Dictionaries (`dictionary/*`) accept either token. A token of the wrong kind gives 403 `customer-token-required` or
-`site-token-required`.
+Dictionaries (`dictionary/*`) accept a site key or a customer or guest token. A token of the wrong kind gives 403
+`customer-token-required` or `site-token-required`.
 
 ## Scenarios
 
@@ -104,8 +114,7 @@ filters of the same selection → `stock/product/suggest` for the search box →
 
 **Orders of the site.** The partner orders for its own recipients and pays from the deposit:
 `delivery/calculate` (and `delivery/pick-up-point/list` for pick-up methods) → `order/create` with `external_id` →
-`order/pay` → `order/show`, `order/list`. `balance/show` shows the deposit; `settings/info/show` shows until when the
-subscription needed for `order/create` is paid. A repeated `order/create` with the `external_id` of an order that is not
+`order/pay` → `order/show`, `order/list`. `balance/show` shows the deposit. A repeated `order/create` with the `external_id` of an order that is not
 canceled and the same body returns that order instead of a new one.
 
 ## This repository
@@ -118,7 +127,7 @@ canceled and the same body returns that order instead of a new one.
 To use the collection:
 
 1. Open `bruno/` in Bruno and select the `prod` environment.
-2. Enter your site token into the secret variable `siteToken`. Bruno keeps secret values on your computer, not in
+2. Enter your server key into the secret variable `siteToken`. Bruno keeps secret values on your computer, not in
    the environment file.
 3. Replace the zero ids of the environment (`productId`, `productVariationId`, `rubricId`, `deliveryMethodId`,
    `pickUpDeliveryMethodId`) with ids of your site from the list operations.

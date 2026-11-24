@@ -15,9 +15,15 @@ Instructions for an AI agent that calls 4Partners Site API v2 on behalf of a par
 
 - Every operation is `POST https://api.4partners.io/v2/<group>/<entity>/<action>` with a JSON body and
   `Content-Type: application/json`. Send `{}` when there are no parameters. Ids go in the body, never in the path.
-- Send the site token in `X-Auth-Token`. The `customer-account`, `customer-cart` and `customer-order` groups take
-  the customer token in `X-Customer-Auth-Token`; get it with `customer-auth/*`. A guest token opens only
-  `customer-cart/show` and `customer-cart/item/*`.
+- Send the site key in `X-Auth-Token`. A server key opens every operation except the customer groups; use it only
+  in code that runs on a server. An app key opens only reading the storefront (`stock/*`, rubrics, brands, aspects,
+  content blocks and articles, site variations), `dictionary/*`, `delivery/calculate`, `delivery/pick-up-point/list` and
+  `customer-auth/*`; it is for code that runs in a mobile app or a browser. For orders of the site, the deposit and
+  any write outside `customer-auth/*` and the customer groups ask the partner for a server key: an app key gives 403
+  `site-token-required` there.
+- The `customer-account`, `customer-cart` and `customer-order` groups take the customer token in
+  `X-Customer-Auth-Token`; get it with `customer-auth/*`. A guest token opens only `customer-cart/show` and
+  `customer-cart/item/*`.
 - Send only the fields of the specification: an unknown key gives 422.
 - Pass `site_variation` from `settings/site-variation/list` to get data in the language, country and currency of
   the partner's region.
@@ -36,14 +42,17 @@ Instructions for an AI agent that calls 4Partners Site API v2 on behalf of a par
   same error.
 - 422 `validation-error`: fix every value listed in `errors`.
 - 401: the token is missing, expired or revoked. Renew the customer token with `customer-auth/refresh`; if refresh
-  also gives 401, the customer must sign in again. A site token that is not accepted is a matter for the partner
-  and 4Partners support.
+  also gives 401, the customer must sign in again. A site key that is not accepted is a matter for the partner
+  and their 4Partners manager.
+- 403 `site-token-required` with a site key: the key is an app key and the operation needs a server key. Do not
+  retry; tell the user that the operation needs a server key.
 - `GET https://api.4partners.io/api/problems/<slug>` describes a `type` and its fix.
 
 ## Limits
 
 - Watch `meta.usage`: `remaining` requests in the sliding one-minute window, `retry_after` seconds to wait. All
-  tokens of the site share one counter per operation group; in the customer groups the counter is per customer.
+  server keys of the site share one counter per operation group; an app key has a counter per key and client IP
+  address; in the customer groups the counter is per customer.
 - On 429, wait `Retry-After` seconds before the next request. Do not retry in a loop.
 - Prefer batch operations (`stock/product/batch-show`, `stock/list`, `order/batch-show`) to many single calls.
 
@@ -59,5 +68,5 @@ Instructions for an AI agent that calls 4Partners Site API v2 on behalf of a par
   - operations that delete data or cannot be undone: every `*/delete`, `settings/variable/reset`,
     `customer-account/profile/delete`, `order/cancel`, `customer-order/cancel`;
   - operations that spend money or place orders: `order/create`, `order/pay`, `customer-order/create`.
-- Never print, log or send tokens to the user or anywhere else: the site token, customer, guest and refresh tokens.
-  The site token gives full access to the site.
+- Never print, log or send keys and tokens to the user or anywhere else: site keys, customer, guest and refresh
+  tokens. The server key gives full access to the site: never put it into app or browser code.

@@ -13110,7 +13110,7 @@
             ]
           },
           "429": {
-            "description": "Too many requests.\n\nPossible `type`:\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — Too many requests",
+            "description": "Too many requests.\n\nPossible `type`:\n- [`/api/problems/sign-in-locked`](/api/problems/sign-in-locked) — Sign-in temporarily locked\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — Too many requests",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13145,6 +13145,7 @@
               }
             },
             "x-problem-types": [
+              "/api/problems/sign-in-locked",
               "/api/problems/too-many-requests"
             ]
           },
@@ -14283,38 +14284,8 @@
               "/api/problems/business-rule"
             ]
           },
-          "502": {
-            "description": "Error.",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "headers": {
-              "X-Request-Id": {
-                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-RateLimit-Limit": {
-                "description": "Requests allowed per window of 1 minute.",
-                "schema": {
-                  "type": "integer"
-                }
-              },
-              "X-RateLimit-Remaining": {
-                "description": "Requests left in the current window.",
-                "schema": {
-                  "type": "integer"
-                }
-              }
-            }
-          },
           "429": {
-            "description": "Too many requests.\n\nPossible `type`:\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — Too many requests",
+            "description": "Too many requests.\n\nPossible `type`:\n- [`/api/problems/sign-in-locked`](/api/problems/sign-in-locked) — Sign-in temporarily locked\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — Too many requests",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14349,8 +14320,39 @@
               }
             },
             "x-problem-types": [
+              "/api/problems/sign-in-locked",
               "/api/problems/too-many-requests"
             ]
+          },
+          "502": {
+            "description": "Error.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
           },
           "default": {
             "description": "Error. The body follows RFC 9457, `type` names the kind of problem.",
@@ -22116,7 +22118,7 @@
           }
         },
         "summary": "Place an order",
-        "description": "Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same body returns the order already created with status 200 and `replayed: true`, even after the subscription has expired; a different body gives 409 `/api/problems/external-id-conflict`. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; an expired subscription of the site owner gives 403 `/api/problems/subscription-expired` (see `subscription_paid_until` of `settings/info/show`).",
+        "description": "Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; an offer whose supplier does not pass stock (`quantity: 99` in `stock/*`) is not limited; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same body returns the order already created with status 200 and `replayed: true`; a different body gives 409 `/api/problems/external-id-conflict`. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; a site owner not allowed to place orders on the site gives 403 `/api/problems/owner-not-allowed`.",
         "parameters": [],
         "requestBody": {
           "description": "Request: place an order.",
@@ -46072,7 +46074,7 @@
           },
           "subscription_paid_until": {
             "readOnly": true,
-            "description": "Until when the subscription of the site owner is paid; `null` — no paid subscription. Without a paid\nsubscription `order/create` gives 403 `/api/problems/subscription-expired`.",
+            "description": "Until when the subscription of the site owner is paid; `null` — no paid subscription. For information: Site API\nv2 does not check it.",
             "type": [
               "string",
               "null"
