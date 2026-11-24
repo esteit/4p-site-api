@@ -9,8 +9,12 @@ meta {
 
 post {
   url: {{baseUrl}}/v2/settings/variable/icon/list
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {}
 }
 
 assert {
@@ -22,5 +26,5 @@ assert {
 }
 
 docs {
-  Icons that `icon_name` of settings and rubrics refers to, with SVG in six styles. An `icon_name` not in the list is a name of the icon package of the admin panel.
+  Icons that `icon_name` of settings and rubrics refers to, with SVG in six styles. An `icon_name` not in the list has no SVG in the API: show an icon of your own for it.
 }

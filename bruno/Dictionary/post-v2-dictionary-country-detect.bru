@@ -1,0 +1,34 @@
+meta {
+  name: Detect the country of the customer
+  type: http
+  seq: 5
+  tags: [
+    Dictionary
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/dictionary/country/detect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "latitude": 55.7558,
+    "longitude": 37.6173,
+    "site_variation": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  The country to preselect in an app: by `latitude` and `longitude` of the device, else by the IP of the device — only with an app key or a customer or guest token received with it, since with a server key the IP is your server — else the main country of the site. Only a country the site delivers to is returned; a found country the site does not deliver to is skipped, and if the main country of the site is not among them, the first delivery country comes; a site without delivery countries gives its main country. `source` tells which way gave it. Pass `code` as `country` to delivery and order methods.
+}

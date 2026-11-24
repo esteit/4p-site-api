@@ -1,7 +1,7 @@
 meta {
   name: Show a brand in a rubric
   type: http
-  seq: 3
+  seq: 5
   tags: [
     Rubric
   ]
@@ -15,8 +15,8 @@ post {
 
 body:json {
   {
-    "rubric_id": 0,
-    "brand_id": 0
+    "rubric_id": {{rubricId}},
+    "brand_id": {{brandId}}
   }
 }
 

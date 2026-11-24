@@ -1,7 +1,7 @@
 meta {
   name: List source stores
   type: http
-  seq: 2
+  seq: 1
   tags: [
     Source
   ]
@@ -15,6 +15,12 @@ post {
 
 body:json {
   {}
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.length) {
+    bru.setVar("storeId", res.body.data[0].id);
+  }
 }
 
 assert {

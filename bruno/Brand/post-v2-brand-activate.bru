@@ -1,7 +1,7 @@
 meta {
   name: Show a brand on the site
   type: http
-  seq: 1
+  seq: 7
   tags: [
     Brand
   ]
@@ -15,7 +15,7 @@ post {
 
 body:json {
   {
-    "brand_id": 0
+    "brand_id": {{brandId}}
   }
 }
 

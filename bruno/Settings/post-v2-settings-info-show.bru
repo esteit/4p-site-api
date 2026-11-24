@@ -9,8 +9,12 @@ meta {
 
 post {
   url: {{baseUrl}}/v2/settings/info/show
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {}
 }
 
 assert {
@@ -22,5 +26,5 @@ assert {
 }
 
 docs {
-  The site of the token: domain, email, until when the subscription of the site owner is paid (`order/create` needs it), rules of AI texts, names and phones by site variation (`site_variations`), whether the storefront shows products without stock (`shows_out_of_stock_products`).
+  The site of the token: domain, email, until when the subscription of the site owner is paid (informational: Site API orders do not check it), rules of AI texts, names and phones by site variation (`site_variations`), whether the storefront shows products without stock (`shows_out_of_stock_products`).
 }

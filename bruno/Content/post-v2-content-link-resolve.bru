@@ -1,0 +1,32 @@
+meta {
+  name: Resolve a storefront link
+  type: http
+  seq: 16
+  tags: [
+    Content
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/content/link/resolve
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "url": "/sale/cheap?filter_price_to=5000"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Turns a link of the site — `link` of banners, `products_url` of blocks, `url` of products, rubrics, brands and articles, a link inside an article — into the screen of an app: `product` (open `stock/product/show` with `product_id` and `product_variation_id`), `products` (call `stock/product/search` with the fields of `search`: rubric, brands, aspect values, price, stock, sale and sort of the storefront page), `article` (`content/article/show` with `article_id`), `home`, `page` (a page of the site the API has no screen for — the cart, collections, service pages, an unknown rubric, brand or article: open `url` in a browser) and `external` (another site: open `url` in a browser). Absolute links and paths are accepted, links of variation folders and subdomains of the site too: then `site_variation` is the code of that variation, pass it as `site_variation` to the next request. Storefront filters `stock/product/search` does not have are left out.
+}

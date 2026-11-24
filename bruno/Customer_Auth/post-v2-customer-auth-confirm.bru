@@ -1,7 +1,7 @@
 meta {
   name: Confirm the sign-in or sign-up with the code
   type: http
-  seq: 4
+  seq: 5
   tags: [
     Customer_Auth
   ]
@@ -36,5 +36,5 @@ assert {
 }
 
 docs {
-  Exchanges `confirmation_id` and the code from the SMS or the email for the customer tokens. A new phone or email is registered. An email that is linked to an existing customer but not confirmed there (for example set by `customer-account/profile/update`) does not sign in to that customer: 422, sign in with its password or phone. A wrong code gives 401, too many wrong codes give 422, then 429 `sign-in-locked`.
+  Exchanges `confirmation_id` and the code from the SMS or the email for the customer tokens. A new phone or email is registered. An email that is linked to an existing customer but not confirmed there (for example set by `customer-account/profile/update`) does not sign in to that customer: 422, sign in with its password or phone. A wrong code gives 401. Every attempt counts: 5 attempts within 15 minutes for one email or phone, the 6th gives 429 `sign-in-locked` until the window ends, even with the right code; a code checked 5 times stops working (422) until a new one is sent.
 }

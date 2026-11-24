@@ -9,8 +9,12 @@ meta {
 
 post {
   url: {{baseUrl}}/v2/settings/theme/list
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {}
 }
 
 assert {

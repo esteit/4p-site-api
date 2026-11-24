@@ -7,7 +7,7 @@
 - **Responses.** A JSON envelope `{timestamp, error, data, meta}`; a field without a value is `null`. Money is a decimal string (`"65095.00"`), country codes are ISO 3166-1 alpha-2 (`RU`).
 - **Errors.** `application/problem+json` with a stable `type` to branch on, `detail` and `pointer` to the wrong value.
 - **Language.** The language of data (product names, characteristics, rubrics, countries, articles) is set by `site_variation` in the body: the code of a site variation from `settings/site-variation/list`, the default variation when omitted. `Accept-Language: en` or `ru` (English by default) sets only the language of error texts (`detail`).
-- **Limits.** 600 requests per minute (sliding window) for each group, counted per site: all tokens of the site share one counter; in customer groups — per customer. The state is in `meta.usage` and `X-RateLimit-*` headers; over the limit — 429 with `Retry-After`.
+- **Limits.** 600 requests per minute (sliding window) for each group: a server key — per site (all server keys of the site share one counter); an app key — per key and client IP; customer groups — per customer or guest. On top of it, per client IP of an app key: 10 sign-in codes, 20 new guests starting checkout and 10 guest orders an hour (all sites together). The state is in `meta.usage` and `X-RateLimit-*` headers; over the limit — 429 with `Retry-After`.
 - **For AI agents.** `/v2/llms.txt` — groups and operations one line each; `/v2/llms-full.txt` — every operation with its body fields, response fields and error types, in Markdown.
 
 Base URL: `https://api.4partners.io/v2`. Every operation is `POST` with a JSON body (`Content-Type: application/json`); an operation without parameters takes `{}`.
@@ -105,6 +105,7 @@ Articles, page templates and layouts of the site.
 - `POST /v2/content/doc-template/list` (`content_doc_template_list`): List templates
 - `POST /v2/content/doc-template/show` (`content_doc_template_show`): Show a template
 - `POST /v2/content/doc-template/update` (`content_doc_template_update`): Update a template
+- `POST /v2/content/link/resolve` (`content_link_resolve`): Resolve a storefront link
 - `POST /v2/content/tag/list` (`content_tag_list`): List article tags
 
 ## Settings
@@ -131,7 +132,9 @@ Settings (variables), variations, information and themes of the site.
 
 Reference data of the site: delivery countries, delivery methods, settlements.
 
+- `POST /v2/dictionary/address/suggest` (`dictionary_address_suggest`): Suggest addresses
 - `POST /v2/dictionary/city/search` (`dictionary_city_search`): Search settlements
+- `POST /v2/dictionary/country/detect` (`dictionary_country_detect`): Detect the country of the customer
 - `POST /v2/dictionary/country/list` (`dictionary_country_list`): List delivery countries
 - `POST /v2/dictionary/delivery-method/list` (`dictionary_delivery_method_list`): List delivery methods
 

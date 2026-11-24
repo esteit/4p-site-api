@@ -1,7 +1,7 @@
 meta {
   name: Delete a rubric
   type: http
-  seq: 7
+  seq: 12
   tags: [
     Rubric
   ]
@@ -15,7 +15,7 @@ post {
 
 body:json {
   {
-    "rubric_id": 0
+    "rubric_id": {{createdRubricId}}
   }
 }
 

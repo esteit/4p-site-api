@@ -14,13 +14,13 @@ auth:apikey {
 }
 
 docs {
-  Requests of a signed-in customer: the customer token goes to `X-Customer-Auth-Token`. Get it with `Customer_Auth` sign-in or confirm.
+  Requests of a signed-in customer: the customer token goes to `X-Customer-Auth-Token`. Get it with `Customer_Auth` sign-in or confirm. A guest token opens only the address requests; the profile and password requests give 403 `customer-token-required` to a guest.
   
   Scenario, in `seq` order (runtime variables are saved by the requests):
   
   1. `Show the profile`, `Update the profile` — partial update, name parts.
-  2. `Add an address` → `addressId` (used by `Customer_Cart / Choose the address`); `List addresses`, `Update an address`.
+  2. `Add an address` → `addressId` (used by `Customer_Cart / Choose the address`); `List addresses`, `Update an address`. Without `email` the address takes the email of the customer; a guest, who has none, must pass `email`, otherwise 422 with `pointer` `#/address/email`.
   3. `Change the password` — `customerPassword` and `customerNewPassword` are runtime variables you set; the answer replaces `customerToken`.
   4. `Delete an address` — cleanup, after `Customer_Order`.
-  5. `Delete the account` — sent as is, `confirm: false` gives 422; with `true` the customer is deleted for good.
+  5. `Delete the account` — safe as is: `confirm: false` gives 422, and the request expects 422. To delete the customer for good, set `confirm: true` in the body and expect 204 in the assertion.
 }

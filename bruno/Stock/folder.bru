@@ -1,6 +1,6 @@
 meta {
   name: Stock
-  seq: 7
+  seq: 6
 }
 
 auth {
@@ -9,22 +9,38 @@ auth {
 
 docs {
   Products sold on the site, read only: cards, current prices and stock, search and facets. Prices are current (the best offer of the site for the country at the time of the request), money is a decimal string. Pick the scenario:
-
+  
   **Full export of the catalog**
-
-  1. `List product ids of the site` (`stock/product/id/list`): all product ids, page by page — pass `next_cursor` as `cursor` until it is `null`. `rubric_id` limits it to a section with its subsections.
-  2. `List products by ids` (`stock/product/batch-show`): up to 100 cards per call for the ids of step 1. Ids missing in the answer are no longer sold on the site: take them off sale.
-
+  
+  1. `List product ids of the site` (`stock/product/id/list`): all product ids in ascending order, page by page — `data.ids` and `data.next_cursor`; pass `next_cursor` as `cursor` until it is `null`. `limit` is 1 to 10 000, 1000 by default. `rubric_id` limits it to a section with its subsections. There is no snapshot: a product added during a pass with an id above the cursor comes on a later page, a product removed during it is missing from the later pages.
+  2. `List products by ids` (`stock/product/batch-show`): up to 100 cards per call for the ids of step 1.
+  3. Compare the pass with your catalog:
+     - an id of your catalog not returned by step 1, or not returned by step 2, is no longer on the site: take it off sale;
+     - a card with `closed: true` comes without `variations`: the product is closed for the site, take it off sale;
+     - a card without `variations` cannot be sold now: keep the card, do not sell it;
+     - a variation with `available: false` (`quantity: 0`, `unavailable_reason`) is not sold now: keep it, do not sell it.
+     Take products off sale only after a pass that went to the end (`next_cursor: null`): an interrupted pass proves nothing about the missing ids.
+  
   **Price and stock sync**
-
-  1. `List prices and stock` (`stock/list`): prices, stock and availability of up to 100 products or 500 variations per call — a light answer for frequent polling, the same values as the cards.
-
+  
+  1. `List prices and stock` (`stock/list`): prices, stock and availability of up to 100 products or 500 variations per call — a light answer for frequent polling, the same values as the cards. Do not sell what is left out or comes with `available: false` until it comes back available; deleting cards is the job of the full export above.
+  
+  | State | `List products by ids` | `List prices and stock` |
+  | --- | --- | --- |
+  | Unknown id or a product outside the rubrics of the site | left out | left out |
+  | Product closed for the site | `closed: true`, `variations: []` | left out |
+  | A variation the card does not show | not in `variations` | not in `variations`; the product may come with empty `variations` |
+  | A variation that cannot be ordered now | `available: false`, `quantity: 0`, `unavailable_reason` | the same |
+  | No offer of the site for the country | `price: null`, `unavailable_reason: no_offer` | the same |
+  
+  Stock `99` means an offer whose supplier does not pass stock: the quantity is unknown, not 99 pieces. `order/create` does not limit such an offer; the customer cart allows up to 99.
+  
   **Storefront**
-
+  
   1. `Search products` (`stock/product/search`): a page of cards by text, rubric, brands, aspect values, price, stock and discount, with `meta.pager`.
-  2. `List search facets` (`stock/facet/list`) with the same filters: values of aspects and brands with the number of products and the price range, for the filter panel.
+  2. `List search facets` (`stock/facet/list`) with the same filters: values of aspects and brands with the number of products and the price range, for the filter panel. It saves `aspectId` and `aspectParamId` for the `Aspect` folder.
   3. `Show a product` (`stock/product/show`): one card, by `product_id` or by the storefront `url` of a deep link.
   4. `Suggest products while typing` (`stock/product/suggest`) for the search box; `Show similar products` (`stock/product/similar`) under a card.
-
+  
   Collection variables used here: `productId`, `rubricId` (set them for your site).
 }

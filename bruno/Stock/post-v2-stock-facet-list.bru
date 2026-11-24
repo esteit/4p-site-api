@@ -20,6 +20,16 @@ body:json {
   }
 }
 
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data) {
+    const aspect = res.body.data.aspects.find((a) => a.values.length);
+    if (aspect) {
+      bru.setVar("aspectId", aspect.id);
+      bru.setVar("aspectParamId", aspect.values[0].id);
+    }
+  }
+}
+
 assert {
   res.status: eq 200
   res.body.timestamp: isDefined

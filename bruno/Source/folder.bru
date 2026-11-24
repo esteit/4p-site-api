@@ -6,3 +6,7 @@ meta {
 auth {
   mode: inherit
 }
+
+docs {
+  Source stores whose products a site can take. `List source stores` → `storeId` (the first store) → `List rubrics of a source store` of that store. Then `Stock / List product ids of the site` with `store_id` and a `rubric_id` of the source store gives its products: put the ids into the body of that request by hand.
+}

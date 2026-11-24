@@ -1,7 +1,7 @@
 meta {
   name: Hide a brand on the site
   type: http
-  seq: 2
+  seq: 5
   tags: [
     Brand
   ]
@@ -15,7 +15,7 @@ post {
 
 body:json {
   {
-    "brand_id": 0
+    "brand_id": {{brandId}}
   }
 }
 

@@ -27,15 +27,6 @@ assert {
   res.body.meta: isDefined
 }
 
-script:post-response {
-  if (res.getStatus() === 200 && res.body.data && res.body.data.packages.length) {
-    const p = res.body.data.packages[0];
-    bru.setVar("packageId", p.id);
-    const m = p.delivery_options.find((o) => o.type === "pick_up_point") || p.delivery_options[0];
-    if (m) { bru.setVar("pickUpDeliveryMethodId", m.delivery_method_id); }
-  }
-}
-
 docs {
-  Saves the address, payment method and the delivery method (with the pick-up point) of one package; omitted fields stay. Every value is checked against the current checkout: an unknown package — 404 on `package_id`; a method the package does not have — 422 on `delivery_method_id`; a point not in `customer-cart/pick-up-point/list` of the method or a point for a courier method — 422 on `pick_up_point_id`; a payment method not in `payment_methods` — 422 on `payment_method_id`; an address of another customer — 404 on `address_id`. The address is saved first: packages and methods depend on it. The order notifications go to the email of the address (the email of the customer if the address has none): change it with `customer-account/address/update`. Returns the recalculated checkout.
+  Saves the address, payment method and the delivery method (with the pick-up point) of one package; omitted fields stay. Every value is checked against the current checkout: an unknown package — 404 on `package_id`; a method the package does not have — 422 on `delivery_method_id`; a point not in `customer-cart/pick-up-point/list` of the method or a point for a courier method — 422 on `pick_up_point_id`; a payment method not in `payment_methods` — 422 on `payment_method_id`; an address of another customer — 404 on `address_id`. The address is saved first: packages and methods depend on it. An address without an email gets the email of the customer; a guest passes it in the address. Order emails go to the email of the customer account (a guest gets none); SMS go to the phone of the address. Returns the recalculated checkout.
 }

@@ -1,7 +1,7 @@
 meta {
   name: Update texts of a brand
   type: http
-  seq: 7
+  seq: 4
   tags: [
     Brand
   ]
@@ -15,17 +15,17 @@ post {
 
 body:json {
   {
-    "brand_id": 0,
+    "brand_id": {{brandId}},
     "translations": [
       {
-        "locale": "",
+        "locale": "ru",
         "h1": null,
         "description": null,
         "short_description": null,
         "meta_title": null,
         "meta_description": null,
         "meta_keywords": null,
-        "meta_robots": null
+        "meta_robots": "INDEX, FOLLOW"
       }
     ],
     "doc_template_id": null,

@@ -1,7 +1,7 @@
 meta {
   name: List rubrics of a source store
   type: http
-  seq: 1
+  seq: 2
   tags: [
     Source
   ]
@@ -15,7 +15,7 @@ post {
 
 body:json {
   {
-    "store_id": 38,
+    "store_id": {{storeId}},
     "parent_id": null,
     "with_descendants": false,
     "max_level": 2,

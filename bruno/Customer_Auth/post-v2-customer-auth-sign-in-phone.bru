@@ -1,0 +1,35 @@
+meta {
+  name: Sign a customer in by phone
+  type: http
+  seq: 4
+  tags: [
+    Customer_Auth
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-auth/sign-in
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "phone": "79991234567"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.confirmation_id) {
+    bru.setVar("confirmationId", res.body.data.confirmation_id);
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.confirmation_id: isString
+}
+
+docs {
+  By `phone` an SMS code is sent and `confirmation_id` is returned: finish with `customer-auth/confirm`. SMS go only to phones with the country code +7 and only if the site allows sign-in by phone: otherwise 422 on `phone` — sign such a customer in by email. By `email` and `password` of a registered customer the tokens are returned at once; a new customer registers with `customer-auth/sign-up`. An unknown email, a disabled customer and a wrong password give the same 401. After 5 attempts for an email without a success within 15 minutes sign-in by it is locked: 429 `sign-in-locked` with `Retry-After`; after 300 failed sign-ins and codes through one site token within 15 minutes — for every customer of that token.
+}

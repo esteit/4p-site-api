@@ -8,11 +8,16 @@ auth {
 }
 
 docs {
-  Customer sign-in with the site token (`X-Auth-Token`). Steps:
+  Customer sign-in with the site key (`X-Auth-Token`, server or app). Steps:
   
-  1. A new customer: `sign-up` (email, the password is optional) → code in the email → `confirm` with `confirmation_id` and the code.
-  2. A registered customer: `sign-in` with email and password (tokens at once) or with phone → SMS code → `confirm`.
-  3. `customerToken` (an hour) goes to `X-Customer-Auth-Token` of `Customer_*`; when it expires — `refresh` with `customerRefreshToken` (one-time, 30 days).
-  4. `sign-out` with `customerRefreshToken` ends the sign-in.
-  5. A guest without an account: `Get a guest token` (first in the folder) saves `guestToken`: a guest token for `Customer_Cart` show and items (90 days). Before an order the guest signs in or up with a code (`sign-in` by phone or `sign-up` without a password, then `confirm`) passing `guest_token`: add `"guest_token": "{{guestToken}}"` to the body of `confirm` (or of `sign-in` by email) and the guest cart moves to the customer.
+  1. A new customer: `Register a customer by email` (the password is optional) → a code in the email → `Confirm the sign-in or sign-up with the code` with `confirmation_id` and the code. `confirmationId` is saved by the register request.
+  2. A registered customer: `Sign a customer in` by email and password (tokens at once) or `Sign a customer in by phone` → an SMS code → `Confirm the sign-in or sign-up with the code`. The phone request saves `confirmationId`; put the code you got into the body of confirm. SMS sign-in takes only phones with the country code +7 and only on sites that allow sign-in by phone: otherwise 422 `business-rule` with `pointer` `#/phone`; such a customer signs in by email. The phone of a delivery address is not limited to +7.
+  3. `customerToken` (an hour) goes to `X-Customer-Auth-Token` of `Customer_*`; when it expires — `Renew the customer token` with `customerRefreshToken` (one-time, 30 days).
+  4. `Sign a customer out` with `customerRefreshToken` ends the sign-in.
+  5. A guest without an account: `Get a guest token` (first in the folder) saves `guestToken` (90 days). It opens `Customer_Cart`, the address requests of `Customer_Account` and `Customer_Order` except `Cancel my order`, so a guest can order without signing in. The customer folders send `customerToken`: to run them as a guest, set the runtime variable `customerToken` to the value of `guestToken` by hand. This is the only case to set `customerToken` yourself. The profile, password and order cancel requests need a signed-in customer.
+  6. A guest who signs in or up keeps the cart, orders and addresses: add `"guest_token": "{{guestToken}}"` to the body of confirm (or of sign-in by email and password). The guest token stops working after that: use the customer token.
+  
+  Codes are 4 digits and are really sent. A wrong code or an unknown `confirmation_id` gives 401 `unauthorized`, the same type as a missing or expired customer token: tell them apart by the request, not by the type. After 401 at confirm ask for the code again; do not renew tokens.
+  
+  A new code: wait `code_lifetime` seconds of the last answer (an SMS: 3 minutes after the first two codes, then 8 minutes, 30 minutes, an hour, up to 24 hours after the 10th code; an email: 55 seconds). Asked sooner, the request gives 422 `business-rule`: send the same request again after the pause. Confirm: every try counts, 5 tries in 15 minutes for one email or phone; the 6th gives 429 `sign-in-locked` with `Retry-After`, even with the right code. A code checked 5 times gives 422 `business-rule` until a new code is sent.
 }

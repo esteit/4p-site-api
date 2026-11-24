@@ -1,7 +1,7 @@
 meta {
   name: Update texts of a brand in a rubric
   type: http
-  seq: 4
+  seq: 6
   tags: [
     Rubric
   ]
@@ -15,17 +15,17 @@ post {
 
 body:json {
   {
-    "rubric_id": 0,
-    "brand_id": 0,
+    "rubric_id": {{rubricId}},
+    "brand_id": {{brandId}},
     "translations": [
       {
-        "locale": "",
+        "locale": "ru",
         "h1": null,
         "description": null,
         "meta_title": null,
         "meta_description": null,
         "meta_keywords": null,
-        "meta_robots": null,
+        "meta_robots": "INDEX, FOLLOW",
         "meta_lead": null
       }
     ]

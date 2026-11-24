@@ -16,13 +16,24 @@ post {
 body:json {
   {
     "site_variation": "default",
-    "return_url": "myapp://orders"
+    "return_url": "myapp://orders",
+    "idempotency_key": "{{customerOrderIdempotencyKey}}"
+  }
+}
+
+script:pre-request {
+  if (!bru.getVar("customerOrderIdempotencyKey")) {
+    bru.setVar("customerOrderIdempotencyKey", "bruno-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10));
   }
 }
 
 script:post-response {
-  if (res.body && res.body.data && res.body.data.order_id) {
+  if (res.getStatus() === 201 && res.body.data && res.body.data.order_id) {
     bru.setVar("customerOrderId", res.body.data.order_id);
+    bru.deleteVar("customerOrderIdempotencyKey");
+  }
+  if (res.getStatus() === 422) {
+    bru.deleteVar("customerOrderIdempotencyKey");
   }
 }
 
@@ -31,8 +42,9 @@ assert {
   res.body.error: eq false
   res.body.data.order_id: isNumber
   res.body.data.payment_url: isString
+  res.body.data.replayed: isBoolean
 }
 
 docs {
-  Creates the order from the selected cart items with the saved checkout choice (`customer-cart/checkout/update`) and returns `payment_url`: the payment page of the site for the chosen payment method. Open it for the customer; after the bank the payment page of the site sends the customer to `return_url` (with `order_id` and `payment_status`), without it the customer stays on the site. There is no notification: poll `is_paid` of `customer-order/show`. A failed or abandoned payment is repeated with `payment_url` of `customer-order/show`. No address, a package without delivery, a pick-up point not chosen (`pick-up-point-required`) or an item over its stock give 422.
+  Creates the order from the selected cart items with the saved checkout choice (`customer-cart/checkout/update`) and returns `payment_url`: the payment page of the site for the chosen payment method. Open it for the customer; after the bank the payment page of the site sends the customer to `return_url` (with `order_id` and `payment_status`), without it the customer stays on the site. There is no notification: poll `is_paid` of `customer-order/show`. A failed or abandoned payment is repeated with `payment_url` of `customer-order/show`. No address, a package without delivery, a pick-up point not chosen (`pick-up-point-required`) or an item over its stock give 422. Pass `idempotency_key` to repeat safely: a request whose answer was lost, repeated with the same key within a day, returns the same order with `replayed: true`; while the first one is still running the repeat gives 409 `conflict`.
 }

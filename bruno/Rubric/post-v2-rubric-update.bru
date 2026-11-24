@@ -1,7 +1,7 @@
 meta {
   name: Update a rubric
   type: http
-  seq: 12
+  seq: 9
   tags: [
     Rubric
   ]
@@ -15,46 +15,8 @@ post {
 
 body:json {
   {
-    "rubric_id": 0,
-    "name": null,
-    "slug": null,
-    "position": null,
-    "context": null,
-    "partner_tag": null,
-    "banned": null,
-    "selection": null,
-    "in_top_menu": null,
-    "in_all_menu": null,
-    "in_footer_menu": null,
-    "unfold": null,
-    "unfold_count": null,
-    "auto_landing": null,
-    "auto_landing_expand": null,
-    "auto_landing_on_index": null,
-    "auto_landing_in_catalog": null,
-    "doc_template_id": null,
-    "layout_template_id": null,
-    "translations": [
-      {
-        "locale": "",
-        "name": null,
-        "full_name": null,
-        "what_phrase": null,
-        "phrase1": null,
-        "phrase2": null,
-        "phrase10": null
-      }
-    ],
-    "seo": [
-      {
-        "site_variation": "",
-        "description": null,
-        "meta_title": null,
-        "meta_description": null,
-        "meta_keywords": null,
-        "meta_robots": null
-      }
-    ]
+    "rubric_id": {{createdRubricId}},
+    "name": "Bruno example rubric, renamed"
   }
 }
 

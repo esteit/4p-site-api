@@ -1,7 +1,7 @@
 meta {
   name: List brands with products on the site
   type: http
-  seq: 3
+  seq: 1
   tags: [
     Brand
   ]
@@ -15,13 +15,19 @@ post {
 
 body:json {
   {
-    "rubric_id": null,
+    "rubric_id": {{rubricId}},
     "in_stock": false,
     "site_variation": null,
     "country": null,
     "sort": "name_asc",
-    "page": 0,
-    "per_page": 0
+    "page": 1,
+    "per_page": 50
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.body.data && res.body.data.length) {
+    bru.setVar("brandId", res.body.data[0].id);
   }
 }
 
@@ -34,5 +40,5 @@ assert {
 }
 
 docs {
-  Brands that have products on the site by the search index, page by page (`meta.pager`), with `product_count` — the same selection as `stock/product/search` and `stock/facet/list`: restrictions of the site, the delivery country of `site_variation` (or `country`), `in_stock`, with `rubric_id` — products of the rubric with its subrubrics. So `product_count` equals `meta.pager.total` of `stock/product/search` with `brand_ids: [id]` and the same fields. Brands closed for the site by the platform and brands hidden by the partner are left out (hidden ones — `brand/list-denied`); a brand without products — `brand/search`. `sort`: by name (default) or by the number of products. A rubric not in the site tree gives 422 `rubric-not-in-tree`.
+  Brands that have products on the site by the search index, page by page (`meta.pager`), with `product_count` — the same selection as `stock/product/search` and `stock/facet/list`: restrictions of the site, the delivery country of `site_variation` (or `country`), `in_stock`, with `rubric_id` — products of the rubric with its subrubrics. So `product_count` equals `meta.pager.total` of `stock/product/search` with `brand_ids: [id]` and the same fields. `meta.cache.brand_product_counts.generated_at` tells when these counts were calculated; `expires_at` — when the 120-second cache expires. Brands closed for the site by the platform and brands hidden by the partner are left out (hidden ones — `brand/list-denied`); a brand without products — `brand/search`. `sort`: by name (default) or by the number of products. A rubric not in the site tree gives 422 `rubric-not-in-tree`.
 }

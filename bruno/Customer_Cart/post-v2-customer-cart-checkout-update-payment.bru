@@ -1,0 +1,29 @@
+meta {
+  name: Choose the payment method
+  type: http
+  seq: 10
+  tags: [
+    Customer_Cart
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/customer-cart/checkout/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "payment_method_id": "{{paymentMethodId}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+}
+
+docs {
+  Saves the address, payment method and the delivery method (with the pick-up point) of one package; omitted fields stay. Every value is checked against the current checkout: an unknown package — 404 on `package_id`; a method the package does not have — 422 on `delivery_method_id`; a point not in `customer-cart/pick-up-point/list` of the method or a point for a courier method — 422 on `pick_up_point_id`; a payment method not in `payment_methods` — 422 on `payment_method_id`; an address of another customer — 404 on `address_id`. The address is saved first: packages and methods depend on it. An address without an email gets the email of the customer; a guest passes it in the address. Order emails go to the email of the customer account (a guest gets none); SMS go to the phone of the address. Returns the recalculated checkout.
+}

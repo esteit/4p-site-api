@@ -28,5 +28,5 @@ assert {
 }
 
 docs {
-  Banner carousels and product sliders of the article of `article_type` (`homepage` by default — the home page; `slug` picks one of several articles), as edited in the storefront editor, in the order of the article: to build the home screen of an app. A slider comes with its products in the format of `stock/product/show` and the storefront address they are taken from (the «see all» link); a banner — with its pictures and link. Other editor blocks (text, HTML) are left out; for the whole page use `content/article/show`. No such article — `article_id: null` and no blocks.
+  Banner carousels and product sliders of the article of `article_type` (`homepage` by default — the home page; `slug` picks one of several articles), as edited in the storefront editor, in the order of the article: to build the home screen of an app. A slider comes with its products in the format of `stock/product/show` and the storefront address they are taken from (the «see all» link); a banner — with its pictures and link. Other editor blocks (text, HTML) are left out; for the whole page use `content/article/show`. An unknown `article_type` gives 422; a known type the site has no article of — `article_id: null` and no blocks.
 }

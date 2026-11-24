@@ -1,7 +1,7 @@
 meta {
   name: Activate a rubric
   type: http
-  seq: 1
+  seq: 11
   tags: [
     Rubric
   ]
@@ -15,7 +15,7 @@ post {
 
 body:json {
   {
-    "rubric_id": 0
+    "rubric_id": {{createdRubricId}}
   }
 }
 

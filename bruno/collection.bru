@@ -12,6 +12,38 @@ auth:apikey {
   placement: header
 }
 
+script:post-response {
+  const checkoutPath = String(req.getUrl()).replace(/^https?:\/\/[^/]+/, "").split("?")[0];
+  if (res.getStatus() === 200 && /\/v2\/customer-cart\/checkout\/(show|update)$/.test(checkoutPath) && res.body.data) {
+    const checkout = res.body.data;
+    const keep = (name, value) => {
+      if (value === undefined || value === null) {
+        bru.deleteVar(name);
+      } else {
+        bru.setVar(name, value);
+      }
+    };
+    const packages = checkout.packages || [];
+    const pkg = packages.find((p) => !p.available) || packages[0];
+    const options = pkg ? pkg.delivery_options || [] : [];
+    const methodOf = (type) => {
+      const option = options.find((o) => o.type === type);
+      return option ? option.delivery_method_id : null;
+    };
+    const packageBefore = bru.getVar("packageId");
+    const pickUpMethodBefore = bru.getVar("cartPickUpDeliveryMethodId");
+    keep("packageId", pkg ? pkg.id : null);
+    keep("courierDeliveryMethodId", methodOf("courier"));
+    keep("cartPickUpDeliveryMethodId", methodOf("pick_up_point"));
+    if (bru.getVar("packageId") !== packageBefore || bru.getVar("cartPickUpDeliveryMethodId") !== pickUpMethodBefore) {
+      bru.deleteVar("pickUpPointId");
+    }
+    const payments = checkout.payment_methods || [];
+    const payment = payments.find((m) => m.selected) || payments[0];
+    keep("paymentMethodId", payment ? payment.id : null);
+  }
+}
+
 tests {
   const status = res.getStatus();
   const body = res.getBody();
@@ -22,10 +54,14 @@ tests {
     expect(header("x-request-id")).to.match(/^[A-Za-z0-9-]{16,64}$/);
   });
 
-  if (status < 400) {
+  if (status === 204) {
+    test("[contract] 204 has no body", function () {
+      expect(body === undefined || body === null || body === "").to.equal(true);
+    });
+  } else if (status < 400) {
     test("[contract] success is a JSON envelope", function () {
       expect(header("content-type")).to.contain("application/json");
-      expect(Object.keys(body)).to.deep.equal(["timestamp", "error", "data", "meta"]);
+      expect(Object.keys(body).sort()).to.deep.equal(["data", "error", "meta", "timestamp"]);
       expect(body.error).to.equal(false);
       expect(body.meta).to.be.an("object").and.not.be.an("array");
     });
@@ -47,7 +83,7 @@ tests {
 docs {
   4Partners Site API v2: the catalog (`Stock` — read products, prices and stock; `Product` — manage products), content, settings and orders of a partner site, and the path of its customers from sign-in to an order.
 
-  OpenAPI spec: `{{baseUrl}}/v2.jsonopenapi`, API reference (Scalar): `{{baseUrl}}/v2`.
+  The collection shows scenarios and working requests, not the full contract. The full models of responses, enums and the error types of each operation (`x-problem-types` of its responses) are in the OpenAPI spec: `spec/openapi.json` and `spec/llms-full.txt` of this repository, `{{baseUrl}}/v2.jsonopenapi`, and the API reference (Scalar) at `{{baseUrl}}/v2`. The `docs` of a request mostly repeat the description of its operation; requests added for a scenario step describe that step.
 
   ## Requests
 
@@ -55,24 +91,128 @@ docs {
 
   ## Collection variables
 
-  - `baseUrl`: API host.
-  - `siteToken` (secret): the API key of the site, issued in the partner account.
-  - `customerToken`: filled by `Customer_Auth` sign-in, confirm and refresh and by `Customer_Account` password update, do not set by hand.
-  - `productId`, `productVariationId`, `rubricId`, `deliveryMethodId`: a product, a product variation, a rubric and a delivery method of your site for the `Stock`, `Product` and order examples.
+  - `baseUrl`: the API host without `/v2`, `https://api.4partners.io`. The requests add `/v2/...` themselves: `{{baseUrl}}/v2/stock/product/show` is `https://api.4partners.io/v2/stock/product/show`.
+  - `siteToken` (secret): a site key, server or app (see «Authorization»); ask your 4Partners manager for it. With a server key every request outside the customer folders runs; with an app key only the requests listed for it. The customer folders send `customerToken` instead.
+  - `customerToken`: filled by `Customer_Auth` sign-in, confirm and refresh and by `Customer_Account` password update. Set it by hand only to run the customer folders as a guest: to the value of `guestToken`.
+  - `customerRefreshToken`: filled together with `customerToken`, used by `Customer_Auth / Renew the customer token` and `Sign a customer out`.
+  - `confirmationId`: filled by `Customer_Auth / Register a customer by email` and `Sign a customer in by phone`, used by `Confirm the sign-in or sign-up with the code`.
+  - `guestToken`: filled by `Customer_Auth / Get a guest token`, lives 90 days.
+  - `customerPassword`, `customerNewPassword`: set them yourself for `Customer_Account / Change the password`.
+  - `productId`, `productVariationId`, `rubricId`, `deliveryMethodId`, `pickUpDeliveryMethodId`: a product, a product variation, a rubric, a delivery method and a pick-up delivery method of your site for the `Stock`, `Product` and order examples. `Customer_Cart` replaces `pickUpDeliveryMethodId` with a method of a package of the cart.
+  - `brandId`: filled by `Brand / List brands with products on the site`, used by `Brand` and `Rubric` brand requests. `createdRubricId`: filled by `Rubric / Create a rubric`, used by update, move, activate, deactivate and delete of `Rubric`. `storeId`: filled by `Source / List source stores`. `aspectId`, `aspectParamId`: filled by `Stock / List search facets`, used by `Aspect`.
+  - `courierDeliveryMethodId`, `cartPickUpDeliveryMethodId`, `paymentMethodId`: filled with `packageId` after `Customer_Cart / Show the checkout` and every `checkout/update`. `customerOrderIdempotencyKey`: made by `Customer_Order / Place the order` before its first try, dropped after 201 or 422.
+  - `cityId`: a settlement id (KLADR) from `Dictionary / Search settlements`, for `Delivery` and `Order / Place an order`.
   - `orderId`: filled by `Order / Place an order`, used by pay, show and cancel.
   - `customerOrderId`: filled by `Customer_Order / Place the order`, used by show and cancel of `Customer_Order`.
+  - `addressId`, `cartItemId`, `pickUpPointId`: filled by `Customer_Account / Add an address`, `Customer_Cart / Add an item to the cart` and `List pick-up points`, used by the next requests of the customer scenario.
+  - `articleId`, `templateId`, `themeId`: filled by `Content / Create an article`, `Content / Create a template` and `Settings / Create a theme`.
+
+  Other values are put into the bodies by hand: `store_id` and a `rubric_id` of the source store in `Stock / List product ids of the site`, the ids of step 1 in `product_ids` of `Stock / List products by ids`, locales and texts of the update requests.
 
   ## Authorization
 
-  - Site token in `X-Auth-Token`: every group except the customer ones.
+  - Server key in `X-Auth-Token`: every group except the customer ones.
+  - App key in `X-Auth-Token`, for a mobile app or browser code: reading the storefront (`Stock`, `Aspect`; `Rubric / List rubrics of the site`, `Search rubrics of the site`, `Show a rubric`, `List filter aspects of a rubric`, `Show a brand in a rubric`; `Brand / List brands with products on the site`, `Search brands`, `Show a brand`; `Content / List the blocks of the home page`, `Resolve a storefront link`, `List articles`, `Show an article`, `List article tags`, `List article types`; `Settings / List site variations`, `Show a site variation`), `Dictionary`, `Delivery / Calculate delivery`, `Delivery / List pick-up points` and `Customer_Auth`. Other operations give 403 `site-token-required`: its `detail` says that the operation needs a server key.
   - Customer token in `X-Customer-Auth-Token`: `Customer_Account`, `Customer_Cart`, `Customer_Order`. The folders send it themselves.
-  - `Dictionary` accepts either token.
+  - Guest token from `Customer_Auth / Get a guest token`, in the same `X-Customer-Auth-Token`: `Customer_Cart`, the address requests of `Customer_Account`, `Customer_Order` except `Cancel my order`, and `Dictionary`. The profile, password and order cancel requests give 403 `customer-token-required` to a guest.
+  - `Dictionary` accepts a site key or a customer or guest token.
 
-  No token or a token that is not accepted gives 401.
+  No token or a token that is not accepted gives 401. A token of the wrong kind gives 403 `customer-token-required` or `site-token-required`.
+
+  Which headers to send:
+
+  - your server: the server key in `X-Auth-Token`;
+  - an app or browser: the app key in `X-Auth-Token` for the storefront, `Dictionary`, `Delivery` and `Customer_Auth`;
+  - a signed-in customer: the customer token in `X-Customer-Auth-Token` for `Customer_*` (the site key of `Customer_Auth` is not needed there);
+  - a guest: the guest token in the same `X-Customer-Auth-Token`.
+
+  Every 401 has the type `unauthorized`: a missing or expired token, a wrong password, a wrong code. What to do depends on the request and the session:
+
+  - `customer-auth/sign-in` or `confirm`: fix the password or the code, do not renew.
+  - `Renew the customer token` itself: sign in again, do not renew again.
+  - A customer request with a customer token: renew once with `Customer_Auth / Renew the customer token` (one call for parallel requests: the refresh token works once) and repeat; a second 401 means sign in again.
+  - A customer request with a guest token: a guest has no refresh token. Renew the guest token with `Get a guest token` and `guest_token` before it expires; an expired guest token cannot be renewed, get a new one.
+
+  ## Scenarios
+
+  The key each scenario needs is in brackets. A folder with its own scenario has the details of the steps.
+
+  **Partner order from the deposit** (server key). Details: the `Order` folder.
+
+  1. `Stock / List prices and stock` or `Stock / Search products`: a variation with stock and its price.
+  2. `Dictionary / Search settlements` → `Delivery / Calculate delivery`; for a pick-up method, `Delivery / List pick-up points`.
+  3. `Order / Place an order` with `external_id`: the answer has `deposit_due`.
+  4. `Balance / Show the deposit` → `Order / Pay an order from the deposit`.
+  5. `Order / Show an order`, `Order / List orders of the site` (filter `external_id`) or `Order / List orders by ids` to follow the order; `Order / Cancel an order` while it is not shipped. `Balance / List deposit operations` shows charges and refunds.
+
+  **Storefront of a site or an app** (server key on your server, app key in an app or browser).
+
+  1. `Settings / List site variations`: `code` is `site_variation` of the other requests.
+  2. `Content / List the blocks of the home page` for the home screen, `Rubric / List rubrics of the site` for the menu, `Brand / List brands with products on the site`. The menu takes the rubrics with the menu flags (`in_top_menu`, `in_all_menu`, `in_footer_menu`, `unfold`, `unfold_count`); show a rubric only when it and every rubric of its `ancestors` (found by `id` in the same list) are `active`.
+  3. A tap on a banner or a product slider (`link`, `products_url`), a link in an article or `url` of a product, rubric, brand or article: `Content / Resolve a storefront link`. `type` names the screen: `product` → `Stock / Show a product` with `product_id` and `product_variation_id` (the card comes with that variation to preselect); `products` → `Stock / Search products` with `search` of the answer as the body; `article` → `Content / Show an article` with `article_id`; `home`; `page` and `external` open `url` in a browser. A link on the folder or subdomain of a site variation returns its code in `site_variation` (else `null`): pass it as `site_variation` to the next request.
+  4. `Stock / Search products` with `Stock / List search facets` for the filters; `Rubric / List filter aspects of a rubric` and `Aspect / List aspect groups` to name and group them. `Stock / Suggest products while typing` for the search box.
+  5. `Stock / Show a product` for the card, `Stock / Show similar products` under it.
+  6. `Rubric / Show a rubric`, `Brand / Show a brand` and `Rubric / Show a brand in a rubric` for the pages of sections and brands; `Content / List articles`, `Content / Show an article`, `Content / List article tags` for content pages.
+  7. `Dictionary / List delivery countries`, `Dictionary / Search settlements` and `Delivery / Calculate delivery` for the delivery terms of the cart.
+
+  **Catalog export and price sync** (server key). Details: the `Stock` folder.
+
+  1. `Stock / List product ids of the site` page by page.
+  2. `Stock / List products by ids` for the cards. Take off sale the ids missing in the answer and the products with `closed: true`, after a pass that went to the end; the `Stock` folder has the full rules.
+  3. `Stock / List prices and stock` for frequent polling.
+
+  **Assortment from a source store** (server key).
+
+  1. `Source / List source stores` → `store_id`.
+  2. `Source / List rubrics of a source store` → a rubric of the source store.
+  3. `Stock / List product ids of the site` with `store_id` and `rubric_id`: products of that rubric.
+  4. `Rubric / Create a rubric` in the site tree (`Rubric / Deactivate a rubric` to fill it before showing) or take one from `Rubric / List rubrics of the site`.
+  5. `Product / Link products to rubrics`: 202, done in the background within minutes, without a task status; the `Product` folder says how to see that it is done.
+  6. `Rubric / Activate a rubric`, then `Product / Set the main rubric of products`: the main rubric must be active.
+
+  **Catalog management** (server key).
+
+  1. Rubric tree: `Rubric / Search rubrics of the site`, `Show a rubric`, `Update a rubric`, `Move a rubric`, `Activate a rubric` and `Deactivate a rubric`; `Delete a rubric` gives 409 for a rubric with children or one used by settings of the platform, deactivate it instead.
+  2. Products: the `Product` folder — texts of products and variations, links to rubrics, the main rubric.
+  3. Brands: `Brand / Search brands` → `Brand / Show a brand` → `Brand / Update texts of a brand`; the page of a brand in a rubric — `Rubric / Show a brand in a rubric` → `Rubric / Update texts of a brand in a rubric`.
+  4. `Brand / Hide a brand on the site` hides the brand with its products, `Brand / List brands hidden on the site` lists them, `Brand / Show a brand on the site` returns one.
+
+  **Content and settings of the site** (server key). Details: the `Content` and `Settings` folders.
+
+  1. `Settings / Show site information` and `Settings / List site variations`.
+  2. `Settings`: settings of the site (`List settings` → `Save settings`, `Reset settings`) and themes of the storefront.
+  3. `Content`: articles (the example creates a draft with `active: false`, then activates it; without `active` an article is published at once) and page templates.
+
+  **Mobile app or browser with an app key** (app key; customer or guest token).
+
+  1. Put the app key into the app. The server key stays on your server: the deposit, orders of the partner and every change of the catalog, content and settings go through it.
+  2. Read the storefront as in «Storefront of a site or an app»; `Dictionary`, `Delivery / Calculate delivery` and `Delivery / List pick-up points` are open too. `Dictionary / Detect the country of the customer` preselects the country; product sets under a product card come from `Stock / Show similar products`, there is no separate request for them. Banners, product sliders and links in articles open through `Content / Resolve a storefront link`: the app does not parse links of the storefront.
+  3. `Customer_Auth / Get a guest token` at the first start; keep the token in the app and renew it before 90 days pass.
+  4. Cart, checkout and orders with the guest token («Guest checkout») or after sign-in («Customer with an account»): every request of `Customer_Auth` is open to an app key.
+  5. Other requests with an app key give 403 `site-token-required`. Requests are limited per key and client IP; one IP gets at most 10 SMS codes, sign-up codes and password reset links an hour in total (429 `sign-in-locked`).
+
+  **Customer with an account** (customer token; `Customer_Auth` with a server or app key).
+
+  1. `Customer_Auth / Register a customer by email`, or `Customer_Auth / Sign a customer in` by email and password (tokens at once), or `Sign a customer in by phone` (SMS code), then `Confirm the sign-in or sign-up with the code`. A forgotten password: `Send a password reset link`. Details: the `Customer_Auth` folder.
+  2. `Customer_Account / Add an address` (`Dictionary / Suggest addresses` fills its fields), then the `Customer_Cart` scenario: items, address, delivery, pick-up point, payment method, promo code.
+  3. `Customer_Order / Place the order` with `return_url` and `idempotency_key` → open `payment_url` for the customer; after the bank the customer may come back to `return_url` with `order_id` and `payment_status`. A lost answer is repeated with the same `idempotency_key` of the same customer or guest within a day: the `Customer_Order` folder has the steps and the limits of the key.
+  4. `Customer_Order / Show my order` (poll `is_paid`: there is no payment notification, and `payment_status` of `return_url` is only a hint) and `List my orders`; `Cancel my order` while the order is unpaid.
+  5. The customer token lives an hour: `Customer_Auth / Renew the customer token` with the refresh token (one-time, 30 days); `Sign a customer out` ends the sign-in.
+  6. `Customer_Account`: `Show the profile`, `Update the profile`, `Change the password` (new tokens in the answer), `Delete the account` with `confirm: true`.
+
+  **Guest checkout** (guest token; `Customer_Auth / Get a guest token` with a server or app key).
+
+  1. `Customer_Auth / Get a guest token` → `guestToken`, 90 days. Renew it before then with `{"guest_token": "<the token>"}`: the answer has a new `token` and `expires_in`, the cart and orders stay. An expired or unknown `guest_token` gives 422: the cart and orders of that guest can no longer be opened, start with a new guest token.
+  2. `Customer_Cart / Add an item to the cart`, `Show the cart`.
+  3. `Customer_Account / Add an address` with `email` (`Dictionary / Suggest addresses` fills the other fields), required for a guest (otherwise 422 with `pointer` `#/address/email`) → `Customer_Cart / Choose the address`.
+  4. The rest of the `Customer_Cart` scenario: delivery, pick-up point, payment method, promo code. A code for the first order or for one use per customer is not applied to a guest (422).
+  5. `Customer_Order / Place the order` → `payment_url`; `Show my order` and `List my orders` while the token lives. A guest gets no order emails, SMS go to the phone of the delivery address. `Cancel my order`, the profile and the password give 403 `customer-token-required`.
+  6. Sign-in with `guest_token` (`Customer_Auth / Confirm the sign-in or sign-up with the code`, or `Sign a customer in` by email and password): the cart, orders and addresses move to the customer. After that the guest token gives 401, cannot be renewed and cannot be used for another sign-in (422).
+  7. With an app key one IP may start checkout for 20 new guests and place 10 guest orders an hour; over that 429 `too-many-requests`, a rejected order does not count. A guest counts as new at the first request of the checkout: the checkout, an address, a delivery or pick-up point list, a promo code or the order. A server key has no such limits.
 
   ## Successful response
 
-  A JSON envelope: `timestamp`, `error` (always `false`), `data` (the result: an object, or an array for lists), `meta` (`request_id`, `usage` with the request limit state). A field without a value comes as `null`, it is never omitted. Money is a decimal string with two digits (`"65095.00"`), country codes are ISO 3166-1 alpha-2 in upper case (`RU`; input is accepted in any case). Lists with a cursor return `next_cursor`; pass it as `cursor` for the next page.
+  A JSON envelope: `timestamp`, `error` (always `false`), `data` (the result: an object, or an array for lists), `meta` (`request_id`, `usage` with the request limit state). A 204 response (the deletes except `customer-cart/item/delete` and `customer-cart/promo-code/delete`, `customer-auth/sign-out`, `customer-auth/password/reset`) has no body: its request id is in the `X-Request-Id` header. A field without a value comes as `null`, it is never omitted. Money is a decimal string with two digits (`"65095.00"`), country codes are ISO 3166-1 alpha-2 in upper case (`RU`; input is accepted in any case). Lists with pages take `page` (from 1) and `per_page` (its limit and default are in the spec of each operation; 0 gives 422) and return `meta.pager`. Lists with a cursor return `data.next_cursor`; pass it as `cursor` for the next page.
 
   ## Errors
 
@@ -82,7 +222,7 @@ docs {
 
   `type` is a link relative to the API host: `GET https://api.4partners.io/api/problems/<slug>` (no token) opens the page of the type — what it means, when it happens, how to fix it and an example response; with `Accept: application/json` the same as JSON (`type`, `title`, `status`, `description`, `when`, `how_to_fix`, `example`). All types: `GET /api/problems`. In the OpenAPI spec the schema `Problem` lists every `type` with its description, and each 403/404/409/422 response of an operation lists the `type` values it can return (`x-problem-types`).
 
-  Examples: `subscription-expired` (403), `deposit-insufficient`, `order-already-paid`, `order-canceled`, `external-id-conflict` (409), `business-rule`, `price-below-site-price`, `pick-up-point-required`, `delivery-unavailable` (422: the delivery method does not carry the order — choose another one from `delivery/calculate`; at `order/pay` nothing is charged, cancel the order and place it again), `rubric-not-in-tree`, `rubric-inactive`, `no-products-accepted`, `site-variation-unknown` (422).
+  Examples: `owner-not-allowed`, `site-token-required`, `customer-token-required` (403), `deposit-insufficient`, `order-already-paid`, `order-canceled`, `external-id-conflict` (409), `business-rule`, `price-below-site-price`, `pick-up-point-required`, `delivery-unavailable` (422: the delivery method does not carry the order — choose another one from `delivery/calculate`; at `order/pay` nothing is charged, cancel the order and place it again), `rubric-not-in-tree`, `rubric-inactive`, `no-products-accepted`, `site-variation-unknown` (422), `code-not-sent` (502: `customer-auth/sign-in` by phone or `customer-auth/sign-up` did not send the code because the SMS gateway or the mail service failed; the attempt still counts toward the code limits, repeat later or sign in the other way).
 
   ## Language
 
@@ -90,7 +230,13 @@ docs {
 
   ## Region
 
-  `site_variation` selects the variation of the site (country, currency, language; codes — `settings/site-variation/list`); empty or `default` is the default one. It is not a variation of a product (`variations`, `product_variation_ids`). `country` overrides the country of the site variation.
+  `site_variation` selects the variation of the site (country, currency, language; codes — `settings/site-variation/list`); empty or `default` is the default one, an unknown code gives 422 `site-variation-unknown`. It is not a variation of a product (`variations`, `product_variation_ids`). An operation takes only the region fields of its spec, an unknown key gives 422:
+
+  - the cart, checkout, promo code, delivery options, pick-up points and `customer-order/create` take `site_variation`, `country`, `currency` and `locale`: `country` overrides the country of the variation, `currency` must be one of that country, `locale` overrides the language. When the checkout has an address in a country the site delivers to, its country and currency win over `country`;
+  - `stock/*` except `stock/product/id/list` take `site_variation` and `country`; other reading operations take `site_variation` where their spec has it;
+  - `delivery/calculate` takes `country` and `currency`; `dictionary/city/search` and `address/suggest` take `country` (the main country of the site by default).
+
+  `dictionary/country/detect` only suggests a country, it changes nothing: pass the country you choose as `country`, or choose a site variation of that country.
 
   ## Request id
 

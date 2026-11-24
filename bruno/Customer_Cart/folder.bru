@@ -14,16 +14,19 @@ auth:apikey {
 }
 
 docs {
-  Requests of a signed-in customer: the customer token goes to `X-Customer-Auth-Token`. Get it with `Customer_Auth` sign-in or confirm. A guest token (`Customer_Auth / guest`) opens only `Show the cart` and the item requests.
-
+  Requests of a signed-in customer or a guest: the customer token goes to `X-Customer-Auth-Token`. Get it with `Customer_Auth` sign-in or confirm. A guest token (`Customer_Auth / Get a guest token`) opens every request of this folder: put it into `customerToken` by hand to check out as a guest.
+  
   Scenario, in `seq` order (runtime variables are saved by the requests):
   
-  1. `Add an item to the cart` — `productVariationId` of the environment → `cartItemId`.
-  2. `Show the cart`, `Update a cart item` — prices, stock (`available_quantity`), quantity.
-  3. `Choose the address` — `addressId` from `Customer_Account / Add an address` → `packageId`, `pickUpDeliveryMethodId`.
+  1. `Add an item to the cart` — `productVariationId` of the environment → `cartItemId`. A repeat for the same variation sets the quantity, it does not add to it. The quantity is 1 to 1000 and may not exceed `available_quantity` (422); a new item is `selected: true`.
+  2. `Show the cart`, `Update a cart item` — prices, stock (`available_quantity`), quantity. Show updates prices and drops items that are no longer sold, without a separate notice: compare it with what the customer saw.
+  3. `Choose the address` — `addressId` from `Customer_Account / Add an address`.
   4. `List delivery options` for the chosen address.
-  5. `Show the checkout` — packages, methods, payment, `deliverable`.
-  6. `List pick-up points` → `pickUpPointId`; `Choose the delivery and the pick-up point`.
-  7. `Apply a promo code` — `promo_code`, `promo_discount` and the discounted `total` come in the checkout; `Remove the promo code` drops it. `SALE10` is an example: put a code of your site.
-  8. `Customer_Order / Place the order`. `Remove items from the cart` empties the cart: skip it when you go on to `Customer_Order`.
+  5. `Show the checkout` — packages, their methods, `payment_methods`, `total`, `deliverable`.
+  6. Delivery of every package. After each `Show the checkout` and `checkout/update` the collection saves `packageId` of the first package with `available: false` (or of the first package), its `courierDeliveryMethodId` and `cartPickUpDeliveryMethodId`, and `paymentMethodId`. A variable the latest checkout does not have is removed, so a request never sends a method of another package: without a courier method `Choose the courier delivery` fails, without a pick-up method the pick-up requests fail — `cartPickUpDeliveryMethodId` has no value in the environment, it is never taken from another package. `pickUpPointId` is removed when the package or its pick-up method changes and when `List pick-up points` returns no points. For a pick-up method: `List pick-up points` → `pickUpPointId`, then `Choose the delivery and the pick-up point`. For a courier method: `Choose the courier delivery`. Run one of the two requests for a package, not both. Repeat this step until `deliverable` is `true`; with one package it runs once. A package with `unavailable_reason` `out_of_stock` needs a lower quantity; with `no_delivery_method` unselect its items in `Update a cart item` or choose another address.
+  7. `Choose the payment method` — `payment_method_id` from `payment_methods`. A method is preselected, so the step is needed only to change it.
+  8. `Apply a promo code` — `promo_code`, `promo_discount` and the discounted `total` come in the checkout; `Remove the promo code` drops it. `SALE10` is an example: put a code of your site.
+  9. `Customer_Order / Place the order`. `Remove items from the cart` empties the cart: skip it when you go on to `Customer_Order`.
+  
+  Read the checkout again with `Show the checkout` after every change: an item, its quantity or `selected`, the address, a promo code, a sign-in of the guest. `package_id` changes with the set of items of a package; a change of the country or currency resets the delivery choice, and a delivery method that no longer fits the address leaves the package with `unavailable_reason`. Place the order only when `deliverable` is `true` and `total` is the amount the customer confirmed.
 }

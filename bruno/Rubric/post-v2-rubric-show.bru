@@ -1,7 +1,7 @@
 meta {
   name: Show a rubric
   type: http
-  seq: 11
+  seq: 3
   tags: [
     Rubric
   ]
@@ -15,7 +15,7 @@ post {
 
 body:json {
   {
-    "rubric_id": 0,
+    "rubric_id": {{rubricId}},
     "site_variation": null
   }
 }

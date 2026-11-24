@@ -34,5 +34,5 @@ assert {
 }
 
 docs {
-  Saves values of settings in a site variation as one batch: all or none. A hidden setting gives 404, a read-only one or a value that does not pass the check — 422 with `pointer` to the item; a numeric setting takes only a number (`15`, `12.5`). A mask of a secret is skipped (`skipped: true`). A theme of the storefront is chosen with `default_theme` (`{"themeId": <id of settings/theme/list>}`).
+  Saves values of settings in a site variation as one batch: all or none. A hidden setting gives 404, a read-only one or a value that does not pass the check — 422 with `pointer` to the item; `value` is stored as a string whatever its JSON type: `15` and `"15"` are the same, a boolean is stored as `true`/`false`, so a value read from `settings/variable/list` can be saved back as is. A mask of a secret is skipped (`skipped: true`). A theme of the storefront is chosen with `default_theme`: its `value` is a JSON string, e.g. `"{\"themeId\": 5}"` with the id from `settings/theme/list` (`themeId` inside the string keeps its case), and reads back as the same string.
 }

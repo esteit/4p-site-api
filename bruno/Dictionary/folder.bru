@@ -6,3 +6,12 @@ meta {
 auth {
   mode: inherit
 }
+
+docs {
+  Dictionaries for delivery and the address form. They accept a site key or a customer or guest token.
+  
+  1. `Detect the country of the customer` preselects the country in an app: by `latitude` and `longitude` of the device, else by the IP of the device (only with an app key or a customer or guest token received with it), else the main country of the site. `source` tells which way gave it.
+  2. `List delivery countries` for a country picker; pass `code` as `country` to the other requests.
+  3. `Suggest addresses` while the customer types an address, then `Customer_Account / Add an address` from the chosen suggestion: `country`, `street`, `house`, `flat`, `zip` as they are; in Russia `city_id` when it is not `null`, else `city_name` (not both: with both `city_name` is used and `city_id` is dropped); outside Russia `city_name` and `region`. `value` is only for the list. The recipient (`first_name`, `last_name`, `phone`, `email` for a guest) is typed by the customer, and so is a required field the suggestion has as `null`. Outside Russia, Belarus, Kazakhstan and Uzbekistan the house number comes inside `street`. If the suggestion service fails, the list is empty and the customer types the address.
+  4. `Search settlements` for the settlement of delivery: in Russia its `id` is `city_id` of delivery and order requests, elsewhere pass the name as text.
+}

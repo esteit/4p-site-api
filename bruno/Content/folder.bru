@@ -8,14 +8,16 @@ auth {
 }
 
 docs {
-  Articles, their tags and page types, page templates and layouts of the site. Run top to bottom: the requests use what the previous ones created and clean up after themselves.
-
+  Articles, their tags and page types, page templates and layouts of the site, the blocks of the home page, links of the storefront. Steps 3 and 4 create test objects and delete them at the end: run each of them in `seq` order.
+  
   1. `List article types` and `List article tags`: dictionaries for `article_type_id` and `tags`.
   2. `List articles`: all articles of the site with the meta of `site_variation`, filters `slug`, `rubric_id`, `tag`, `query`, `has_text`.
-  3. `Create an article` → `Show` → `Update` → `Deactivate` → `Activate` → `Delete`: the article is created as a draft (`active: false`), its id is saved to `articleId`. Dates are ISO 8601 with an offset, an empty string resets a text field, lists drop repeats, rubrics and relinking must be of the site tree.
+  3. `Create an article` → `Show` → `Update` → `Deactivate` → `Activate` → `Delete`, its id is saved to `articleId`. An article without `active` is published at once (`active` is `true` by default); this example passes `active: false` and creates a draft: it is hidden from the lists and menus of the storefront, but its page opens by its direct `url`. Dates are ISO 8601 with an offset, an empty string resets a text field, lists drop repeats, rubrics and relinking must be of the site tree.
   4. `List templates` → `Create a template` → `Show` → `Update` → `Delete`: a layout with `{{ content }}`, its id is saved to `templateId`. Shared templates are read-only (409).
-
+  5. `List the blocks of the home page`: banner carousels and product sliders of the home screen, read only; it does not depend on the steps above.
+  6. `Resolve a storefront link`: the screen of an app for `link` of a banner, `products_url` of a slider, a link in an article or `url` of a product, rubric, brand or article. The example resolves a sale link sorted by price from low to high, with prices up to 5000: `type` is `products`, and `search` is the body for `Stock / Search products`. It does not depend on the steps above.
+  
   HTML, styles and scripts of articles and templates are output on the storefront as is, without sanitizing.
-
+  
   Collection variables used here: `rubricId` (a rubric of your site tree); `articleId` and `templateId` are set by the create requests.
 }

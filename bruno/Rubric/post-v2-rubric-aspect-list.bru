@@ -1,7 +1,7 @@
 meta {
   name: List filter aspects of a rubric
   type: http
-  seq: 2
+  seq: 4
   tags: [
     Rubric
   ]
@@ -15,7 +15,7 @@ post {
 
 body:json {
   {
-    "rubric_id": 0,
+    "rubric_id": {{rubricId}},
     "site_variation": null
   }
 }

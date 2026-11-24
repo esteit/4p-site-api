@@ -9,12 +9,20 @@ auth {
 
 docs {
   Orders of the partner (the site owner), paid from its deposit. Run in this order:
-
+  
   1. `Stock / List prices and stock` or `Stock / Search products`: pick `product_variation_id` with stock and its price.
-  2. `Dictionary / city search` → `city_id` (KLADR), then `Delivery / calculate` with the same `items`, `country` and `city_id`: priced methods in `options`, the others in `omitted` with the reason. For a method with `type: pick_up_point` choose a point with `Delivery / pick-up-point list` (`price` — to that point) and pass it as `pick_up_point_id` to `calculate` and `Place an order`.
-  3. `Order / Place an order`: the answer has the order and `deposit_due`, the amount `pay` will charge. Repeat it with the same `external_id` safely: you get the same order with `replayed: true`.
-  4. `Balance / show`, then `Order / pay`: charges `deposit_due` from the deposit in `deposit_currency`.
-  5. `Order / show` or `Order / list` (filter `external_id`) to follow the order; `Order / cancel` while it is not shipped. Canceling does not return the deposit: `deposit_refunded` shows what was returned.
-
-  Environment variables used here: `productVariationId`, `deliveryMethodId`, `cityId`, `pickUpDeliveryMethodId` (set them for your site), `orderId` (filled by `Place an order`). To place an order to a pick-up point, set `delivery_method_id` to `{{pickUpDeliveryMethodId}}` and add `"pick_up_point_id"` from `Delivery / pick-up-point list`.
+  2. `Dictionary / Search settlements` → `city_id` (KLADR), then `Delivery / Calculate delivery` with the same `items`, `country` and `city_id`: priced methods in `options`, the others in `omitted` with the reason. For a method with `type: pick_up_point` choose a point with `Delivery / List pick-up points` (`price` — to that point) and pass it as `pick_up_point_id` to `Calculate delivery` and `Place an order`.
+  3. `Order / Place an order`: the answer has the order and `deposit_due`, the amount `Pay an order from the deposit` will charge, in `deposit_currency` (the currency of the order). The prices of the lines and of the delivery are saved with the order; the stock is checked here but not reserved, and `Pay an order from the deposit` does not check it again. An unpaid order is canceled automatically, after 30 days on most sites.
+  4. `Balance / Show the deposit` (the balance in each currency), then `Order / Pay an order from the deposit`. Without `deposit_currency` it charges `deposit_due` in the currency of the order; another currency (`RUB`, `USD`, `EUR`) is converted at the rate of the moment of payment.
+  5. `Order / Show an order` or `Order / List orders of the site` (filter `external_id`) to follow the order; `Order / Cancel an order` while it is not shipped. `status`: `new`, `confirmed`, `wait_in_store`, `in_store`, `packed`, `sent`, `delivered`, `canceled`; old orders may have `sent_msk`, show it as `sent`. Canceling does not return the deposit: `deposit_refunded` shows what was returned.
+  
+  Repeats of `Place an order` with the same `external_id`:
+  
+  - an order that is not canceled, the same items (in any order), delivery method, and the pick-up point and currency when you pass them — 200, the same order with `replayed: true`;
+  - such an order, but other items, delivery method, pick-up point or currency — 409 `external-id-conflict`;
+  - the order with this `external_id` is canceled — a new order (201).
+  
+  The recipient is not compared. `external_id` is unique among the live orders of the site and has no expiry; it is up to 512 bytes.
+  
+  Environment variables used here: `productVariationId`, `deliveryMethodId`, `cityId`, `pickUpDeliveryMethodId` (set them for your site), `orderId` (filled by `Place an order`). To place an order to a pick-up point, set `delivery_method_id` to `{{pickUpDeliveryMethodId}}` and add `"pick_up_point_id"` from `Delivery / List pick-up points`.
 }

@@ -14,12 +14,21 @@ auth:apikey {
 }
 
 docs {
-  Orders of a signed-in customer: the customer token goes to `X-Customer-Auth-Token`. Get it with `Customer_Auth` sign-in or confirm.
+  Orders of a signed-in customer or a guest: the customer token goes to `X-Customer-Auth-Token`. Get it with `Customer_Auth` sign-in or confirm. A guest token (`Customer_Auth / Get a guest token`) opens every request of this folder except `Cancel my order`: put it into `customerToken` by hand to order as a guest. `Cancel my order` with a guest token gives 403 `customer-token-required`: the guest signs in with `guest_token` first, then the order belongs to the customer. A guest sees the orders while the guest token lives; a guest who signs in with `guest_token` finds them in the customer's orders.
   
   Scenario, in `seq` order:
   
-  1. `Place the order` — from the selected cart items and the checkout choice (`Customer_Cart`: add an item, choose the address, delivery and payment). Saves `customerOrderId`.
+  1. `Place the order` — from the selected cart items and the checkout choice (`Customer_Cart`: add an item, choose the address, delivery and payment). Saves `customerOrderId`. The selected items leave the cart for the order; unselected ones stay.
   2. `Show my order` — the card: `payment_url` (open it to pay on the site; open it again to repeat a failed payment), `is_paid` (no notification: poll this request), delivery, address and recipient, items with images, `status_history`.
   3. `List my orders` — the same cards, newest first, `status` filters by one status.
   4. `Cancel my order` — an unpaid order only; a paid one gives 409 `order-already-paid`. Run it to clean up the order of the scenario.
+  
+  `Place the order` sends `idempotency_key`: the request makes a key before the first try, keeps it while there is no answer and drops it after 201 or 422. If the answer is lost (timeout, network error), send the request again: the same key returns the same order with `replayed: true`, and nothing new is placed. 409 `conflict` means the first request is still running: wait a few seconds and repeat with the same key. A new order needs a new key.
+  
+  Limits of the key:
+  
+  - It finds an order of the same site and the same customer or guest. The key of another customer or guest places a new order; a refreshed customer token or a renewed guest token of the same customer or guest keeps the key working.
+  - It works for a day from the first order placed with it; later the same key places a new order. Do not repeat it a day or more after the first try: check `List my orders` first.
+  - After a guest signs in, the key of the guest no longer finds the order: the order is in `List my orders` of the customer.
+  - The key is a runtime variable of Bruno: it is lost when Bruno closes. After that, check `List my orders` before you place the order again, or set `customerOrderIdempotencyKey` by hand to the key of the lost try.
 }

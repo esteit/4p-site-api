@@ -2,7 +2,7 @@
   "openapi": "3.2.0",
   "info": {
     "title": "4Partners Site API",
-    "description": "The API of a 4Partners partner site: catalog, content and settings of the site, orders of the partner paid from its deposit, and the path of a customer from sign-in to an order.\n\n- **Requests.** Every operation is `POST /v2/<group>/<entity>/<action>` with a JSON body; an operation without parameters takes `{}`. Keys are `snake_case`, ids go in the body, an unknown key gives 422.\n- **Authorization.** The site token in `X-Auth-Token` (issued in the partner account). Customer groups (`customer-account`, `customer-cart`, `customer-order`) take the customer token in `X-Customer-Auth-Token`, issued by `customer-auth` with the site token: it is valid for an hour, `customer-auth/refresh` renews it with the one-time refresh token (30 days), `customer-auth/sign-out` ends the sign-in. Customer tokens stop working after a password change or reset and when the site token that issued them is disabled. Dictionaries accept either token; other operations read only `X-Auth-Token`. A wrong kind of token gives 403 `customer-token-required` or `site-token-required`.\n- **Responses.** A JSON envelope `{timestamp, error, data, meta}`; a field without a value is `null`. Money is a decimal string (`\"65095.00\"`), country codes are ISO 3166-1 alpha-2 (`RU`).\n- **Errors.** `application/problem+json` with a stable `type` to branch on, `detail` and `pointer` to the wrong value.\n- **Language.** The language of data (product names, characteristics, rubrics, countries, articles) is set by `site_variation` in the body: the code of a site variation from `settings/site-variation/list`, the default variation when omitted. `Accept-Language: en` or `ru` (English by default) sets only the language of error texts (`detail`).\n- **Limits.** 600 requests per minute (sliding window) for each group, counted per site: all tokens of the site share one counter; in customer groups — per customer. The state is in `meta.usage` and `X-RateLimit-*` headers; over the limit — 429 with `Retry-After`.\n- **For AI agents.** `/v2/llms.txt` — groups and operations one line each; `/v2/llms-full.txt` — every operation with its body fields, response fields and error types, in Markdown.",
+    "description": "The API of a 4Partners partner site: catalog, content and settings of the site, orders of the partner paid from its deposit, and the path of a customer from sign-in to an order.\n\n- **Requests.** Every operation is `POST /v2/<group>/<entity>/<action>` with a JSON body; an operation without parameters takes `{}`. Keys are `snake_case`, ids go in the body, an unknown key gives 422.\n- **Authorization.** The site token in `X-Auth-Token` (issued in the partner account). Customer groups (`customer-account`, `customer-cart`, `customer-order`) take the customer token in `X-Customer-Auth-Token`, issued by `customer-auth` with the site token: it is valid for an hour, `customer-auth/refresh` renews it with the one-time refresh token (30 days), `customer-auth/sign-out` ends the sign-in. Customer tokens stop working after a password change or reset and when the site token that issued them is disabled. Dictionaries accept either token; other operations read only `X-Auth-Token`. A wrong kind of token gives 403 `customer-token-required` or `site-token-required`.\n- **Responses.** A JSON envelope `{timestamp, error, data, meta}`; a field without a value is `null`. Money is a decimal string (`\"65095.00\"`), country codes are ISO 3166-1 alpha-2 (`RU`).\n- **Errors.** `application/problem+json` with a stable `type` to branch on, `detail` and `pointer` to the wrong value.\n- **Language.** The language of data (product names, characteristics, rubrics, countries, articles) is set by `site_variation` in the body: the code of a site variation from `settings/site-variation/list`, the default variation when omitted. `Accept-Language: en` or `ru` (English by default) sets only the language of error texts (`detail`).\n- **Limits.** 600 requests per minute (sliding window) for each group: a server key — per site (all server keys of the site share one counter); an app key — per key and client IP; customer groups — per customer or guest. On top of it, per client IP of an app key: 10 sign-in codes, 20 new guests starting checkout and 10 guest orders an hour (all sites together). The state is in `meta.usage` and `X-RateLimit-*` headers; over the limit — 429 with `Retry-After`.\n- **For AI agents.** `/v2/llms.txt` — groups and operations one line each; `/v2/llms-full.txt` — every operation with its body fields, response fields and error types, in Markdown.",
     "version": "2.0.0"
   },
   "servers": [
@@ -217,7 +217,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -578,7 +578,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -923,7 +923,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -1253,7 +1253,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -1608,7 +1608,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -1976,7 +1976,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -2344,7 +2344,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -2682,7 +2682,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -3081,7 +3081,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -3432,7 +3432,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -3838,7 +3838,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -4227,7 +4227,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -4562,7 +4562,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -4942,7 +4942,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -5290,7 +5290,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -5688,7 +5688,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -6020,7 +6020,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -6379,7 +6379,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -6857,7 +6857,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -7258,7 +7258,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -7565,7 +7565,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -7924,7 +7924,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -8259,7 +8259,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -8588,7 +8588,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -8978,7 +8978,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -9379,7 +9379,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -9503,6 +9503,308 @@
             }
           },
           "required": true
+        },
+        "security": [
+          {
+            "SiteToken": []
+          }
+        ]
+      }
+    },
+    "/v2/content/link/resolve": {
+      "post": {
+        "operationId": "content_link_resolve",
+        "tags": [
+          "Content"
+        ],
+        "responses": {
+          "200": {
+            "description": "ResolvedLink resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "timestamp",
+                    "error",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Response time."
+                    },
+                    "error": {
+                      "type": "boolean",
+                      "const": false,
+                      "description": "Always `false` in a successful response; `true` in an error (`application/problem+json`)."
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ResolvedLink"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "links": {}
+          },
+          "400": {
+            "description": "Malformed request.\n\nPossible `type`:\n- [`/api/problems/bad-request`](/api/problems/bad-request) — Malformed request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/bad-request"
+            ]
+          },
+          "401": {
+            "description": "Authentication required.\n\nPossible `type`:\n- [`/api/problems/unauthorized`](/api/problems/unauthorized) — Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/unauthorized"
+            ]
+          },
+          "403": {
+            "description": "Access denied.\n\nPossible `type`:\n- [`/api/problems/site-token-required`](/api/problems/site-token-required) — Site token required\n- [`/api/problems/forbidden`](/api/problems/forbidden) — Access denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/site-token-required",
+              "/api/problems/forbidden"
+            ]
+          },
+          "422": {
+            "description": "Request validation failed, or a business rule rejected the request (`type` names the rule, `pointer` the value).\n\nPossible `type`:\n- [`/api/problems/validation-error`](/api/problems/validation-error) — Request validation failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationProblem"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/validation-error"
+            ]
+          },
+          "429": {
+            "description": "Too many requests.\n\nPossible `type`:\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitProblem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before the next request.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/too-many-requests"
+            ]
+          },
+          "default": {
+            "description": "Error. The body follows RFC 9457, `type` names the kind of problem.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Resolve a storefront link",
+        "description": "Turns a link of the site — `link` of banners, `products_url` of blocks, `url` of products, rubrics, brands and articles, a link inside an article — into the screen of an app: `product` (open `stock/product/show` with `product_id` and `product_variation_id`), `products` (call `stock/product/search` with the fields of `search`: rubric, brands, aspect values, price, stock, sale and sort of the storefront page), `article` (`content/article/show` with `article_id`), `home`, `page` (a page of the site the API has no screen for — the cart, collections, service pages, an unknown rubric, brand or article: open `url` in a browser) and `external` (another site: open `url` in a browser). Absolute links and paths are accepted, links of variation folders and subdomains of the site too: then `site_variation` is the code of that variation, pass it as `site_variation` to the next request. Storefront filters `stock/product/search` does not have are left out.",
+        "parameters": [],
+        "requestBody": {
+          "description": "Request: resolve a storefront link.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "default": "",
+                    "description": "A link of the storefront as it came: absolute (`https://shop.example.com/r-shoes/cheap`) or a path (`/a-delivery`), from `link` of banners, `products_url` of blocks, `url` of products, rubrics, brands and articles, or an article text."
+                  }
+                }
+              }
+            }
+          },
+          "required": false
         },
         "security": [
           {
@@ -9712,7 +10014,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -10088,7 +10390,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -10384,7 +10686,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -10680,7 +10982,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -11009,7 +11311,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -11116,7 +11418,7 @@
           }
         },
         "summary": "Update an address",
-        "description": "Replaces all fields of the address. An address of another customer gives 404.",
+        "description": "Replaces the address: a field left out becomes empty, except `zip`, which stays as it is. An address of another customer gives 404.",
         "parameters": [],
         "requestBody": {
           "description": "Request: update an address.",
@@ -11303,7 +11605,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -11567,7 +11869,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -11893,7 +12195,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -12221,7 +12523,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -12515,7 +12817,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -12623,7 +12925,7 @@
           }
         },
         "summary": "Confirm the sign-in or sign-up with the code",
-        "description": "Exchanges `confirmation_id` and the code from the SMS or the email for the customer tokens. A new phone or email is registered. An email that is linked to an existing customer but not confirmed there (for example set by `customer-account/profile/update`) does not sign in to that customer: 422, sign in with its password or phone. A wrong code gives 401, too many wrong codes give 422, then 429 `sign-in-locked`.",
+        "description": "Exchanges `confirmation_id` and the code from the SMS or the email for the customer tokens. A new phone or email is registered. An email that is linked to an existing customer but not confirmed there (for example set by `customer-account/profile/update`) does not sign in to that customer: 422, sign in with its password or phone. A wrong code gives 401. Every attempt counts: 5 attempts within 15 minutes for one email or phone, the 6th gives 429 `sign-in-locked` until the window ends, even with the right code; a code checked 5 times stops working (422) until a new one is sent.",
         "parameters": [],
         "requestBody": {
           "description": "Request: confirm the sign-in or sign-up with the code.",
@@ -12810,7 +13112,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -12917,7 +13219,7 @@
           }
         },
         "summary": "Get a guest token",
-        "description": "A token for a customer without an account (an app before sign-in): in `X-Customer-Auth-Token` it opens only `customer-cart/show` and `customer-cart/item/*`, other customer operations give 403 `customer-token-required`. The cart lives as long as the token, 90 days; renew it before with `guest_token`, the new token keeps the cart. To place an order the guest signs in or up with a code — `customer-auth/sign-in` by `phone` (SMS) or `customer-auth/sign-up` by `email` (the password is optional), then `customer-auth/confirm` with `guest_token`: the guest cart moves to the customer. A code is required because an order on an unconfirmed phone or email would show the order to the owner of that phone or email.",
+        "description": "A token for a customer without an account (an app before sign-in): in `X-Customer-Auth-Token` it opens the cart, checkout, addresses and orders (`customer-cart/*`, `customer-account/address/*`, `customer-order/create`, `list`, `show`); the profile, password and order cancel give 403 `customer-token-required` — the guest signs in to cancel. A guest places an order without signing in: the order lives on a hidden guest account tied to this token only, never to an existing customer with the same phone or email, and the guest sees it while the token lives. No order emails are sent to a guest; SMS goes to the phone of the delivery address. The token lives 90 days; renew it before with `guest_token`, the new token keeps the cart and orders. When the guest signs in or up with `guest_token` (`customer-auth/sign-in` by email and password, or `customer-auth/confirm`), the cart, orders and addresses move to the customer and the guest token stops working. With an app key, one IP may start checkout for 20 new guests and place 10 guest orders an hour (429).",
         "parameters": [],
         "requestBody": {
           "description": "Request: get a guest token.",
@@ -13073,7 +13375,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -13368,7 +13670,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -13661,7 +13963,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -13738,7 +14040,7 @@
             ]
           },
           "502": {
-            "description": "Error.",
+            "description": "Error.\n\nPossible `type`:\n- [`/api/problems/code-not-sent`](/api/problems/code-not-sent) — Code not sent",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -13765,7 +14067,10 @@
                   "type": "integer"
                 }
               }
-            }
+            },
+            "x-problem-types": [
+              "/api/problems/code-not-sent"
+            ]
           },
           "default": {
             "description": "Error. The body follows RFC 9457, `type` names the kind of problem.",
@@ -13799,7 +14104,7 @@
           }
         },
         "summary": "Sign a customer in",
-        "description": "By `phone` an SMS code is sent and `confirmation_id` is returned: finish with `customer-auth/confirm`. By `email` and `password` of a registered customer the tokens are returned at once; a new customer registers with `customer-auth/sign-up`. An unknown email, a disabled customer and a wrong password give the same 401. After 5 attempts for an email without a success within 15 minutes sign-in by it is locked: 429 `sign-in-locked` with `Retry-After`; after 300 failed sign-ins and codes through one site token within 15 minutes — for every customer of that token.",
+        "description": "By `phone` an SMS code is sent and `confirmation_id` is returned: finish with `customer-auth/confirm`. SMS go only to phones with the country code +7 and only if the site allows sign-in by phone: otherwise 422 on `phone` — sign such a customer in by email. By `email` and `password` of a registered customer the tokens are returned at once; a new customer registers with `customer-auth/sign-up`. An unknown email, a disabled customer and a wrong password give the same 401. After 5 attempts for an email without a success within 15 minutes sign-in by it is locked: 429 `sign-in-locked` with `Retry-After`; after 300 failed sign-ins and codes through one site token within 15 minutes — for every customer of that token.",
         "parameters": [],
         "requestBody": {
           "description": "Request: sign a customer in.",
@@ -13955,7 +14260,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -14248,7 +14553,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -14325,7 +14630,7 @@
             ]
           },
           "502": {
-            "description": "Error.",
+            "description": "Error.\n\nPossible `type`:\n- [`/api/problems/code-not-sent`](/api/problems/code-not-sent) — Code not sent",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -14352,7 +14657,10 @@
                   "type": "integer"
                 }
               }
-            }
+            },
+            "x-problem-types": [
+              "/api/problems/code-not-sent"
+            ]
           },
           "default": {
             "description": "Error. The body follows RFC 9457, `type` names the kind of problem.",
@@ -14386,7 +14694,7 @@
           }
         },
         "summary": "Register a customer by email",
-        "description": "Sends a code to the email and returns a one-time `confirmation_id` (`email:` and 32 hex characters): the customer is created with the password of this sign-up (or without a password, then they sign in by a code) by `customer-auth/confirm` with the code from the email. Every sign-up gets its own `confirmation_id`, and only it sets its password: another sign-up with the same email sends a new code but does not change the password of this one. The answer is the same whether the email is registered or not; for a registered email the code signs the customer in and the password stays as it was. A new code for the same email — not earlier than in a minute (422).",
+        "description": "Sends a code to the email and returns a one-time `confirmation_id` (`email:` and 32 hex characters): the customer is created with the password of this sign-up (or without a password, then they sign in by a code) by `customer-auth/confirm` with the code from the email. Every sign-up gets its own `confirmation_id`, and only it sets its password: another sign-up with the same email sends a new code but does not change the password of this one. The answer is the same whether the email is registered or not; for a registered email the code signs the customer in and the password stays as it was. A new code for the same email — not earlier than in 55 seconds (422); `code_lifetime` of the answer gives the wait.",
         "parameters": [],
         "requestBody": {
           "description": "Request: register a customer by email.",
@@ -14606,7 +14914,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -14969,7 +15277,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -15079,7 +15387,7 @@
           }
         },
         "summary": "Save the checkout choice",
-        "description": "Saves the address, payment method and the delivery method (with the pick-up point) of one package; omitted fields stay. Every value is checked against the current checkout: an unknown package — 404 on `package_id`; a method the package does not have — 422 on `delivery_method_id`; a point not in `customer-cart/pick-up-point/list` of the method or a point for a courier method — 422 on `pick_up_point_id`; a payment method not in `payment_methods` — 422 on `payment_method_id`; an address of another customer — 404 on `address_id`. The address is saved first: packages and methods depend on it. The order notifications go to the email of the address (the email of the customer if the address has none): change it with `customer-account/address/update`. Returns the recalculated checkout.",
+        "description": "Saves the address, payment method and the delivery method (with the pick-up point) of one package; omitted fields stay. Every value is checked against the current checkout: an unknown package — 404 on `package_id`; a method the package does not have — 422 on `delivery_method_id`; a point not in `customer-cart/pick-up-point/list` of the method or a point for a courier method — 422 on `pick_up_point_id`; a payment method not in `payment_methods` — 422 on `payment_method_id`; an address of another customer — 404 on `address_id`. The address is saved first: packages and methods depend on it. An address without an email gets the email of the customer; a guest passes it in the address. Order emails go to the email of the customer account (a guest gets none); SMS go to the phone of the address. Returns the recalculated checkout.",
         "parameters": [],
         "requestBody": {
           "description": "Request: save the checkout choice.",
@@ -15302,7 +15610,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -15674,7 +15982,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -16003,7 +16311,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -16332,7 +16640,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -16664,7 +16972,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -17106,7 +17414,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -17436,7 +17744,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -17765,7 +18073,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -18233,7 +18541,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -18406,7 +18714,8 @@
                   "error": false,
                   "data": {
                     "order_id": 1652,
-                    "payment_url": "https://shop.example.com/my/payment/route/1652?invoice=1652&payment_flow=pay_link&payment_type=cloudpayments"
+                    "payment_url": "https://shop.example.com/my/payment/route/1652?invoice=1652&payment_flow=pay_link&payment_type=cloudpayments",
+                    "replayed": false
                   },
                   "meta": {
                     "request_id": "01M6GKXT4GC0YVXW693ZWYY9A1",
@@ -18575,12 +18884,45 @@
               "/api/problems/not-found"
             ]
           },
+          "409": {
+            "description": "Conflict with the current state.\n\nPossible `type`:\n- [`/api/problems/conflict`](/api/problems/conflict) — Conflict with the current state",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/conflict"
+            ]
+          },
           "422": {
             "description": "Request validation failed, or a business rule rejected the request (`type` names the rule, `pointer` the value).\n\nPossible `type`:\n- [`/api/problems/validation-error`](/api/problems/validation-error) — Request validation failed\n- [`/api/problems/business-rule`](/api/problems/business-rule) — Rejected by a business rule\n- [`/api/problems/delivery-unavailable`](/api/problems/delivery-unavailable) — Delivery method cannot deliver\n- [`/api/problems/site-variation-unknown`](/api/problems/site-variation-unknown) — Unknown site variation\n- [`/api/problems/pick-up-point-required`](/api/problems/pick-up-point-required) — Pick-up point required",
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -18690,7 +19032,7 @@
           }
         },
         "summary": "Place the order",
-        "description": "Creates the order from the selected cart items with the saved checkout choice (`customer-cart/checkout/update`) and returns `payment_url`: the payment page of the site for the chosen payment method. Open it for the customer; after the bank the payment page of the site sends the customer to `return_url` (with `order_id` and `payment_status`), without it the customer stays on the site. There is no notification: poll `is_paid` of `customer-order/show`. A failed or abandoned payment is repeated with `payment_url` of `customer-order/show`. No address, a package without delivery, a pick-up point not chosen (`pick-up-point-required`) or an item over its stock give 422.",
+        "description": "Creates the order from the selected cart items with the saved checkout choice (`customer-cart/checkout/update`) and returns `payment_url`: the payment page of the site for the chosen payment method. Open it for the customer; after the bank the payment page of the site sends the customer to `return_url` (with `order_id` and `payment_status`), without it the customer stays on the site. There is no notification: poll `is_paid` of `customer-order/show`. A failed or abandoned payment is repeated with `payment_url` of `customer-order/show`. No address, a package without delivery, a pick-up point not chosen (`pick-up-point-required`) or an item over its stock give 422. Pass `idempotency_key` to repeat safely: a request whose answer was lost, repeated with the same key within a day, returns the same order with `replayed: true`; while the first one is still running the repeat gives 409 `conflict`.",
         "parameters": [],
         "requestBody": {
           "description": "Request: place the order.",
@@ -18700,7 +19042,8 @@
                 "$ref": "#/components/schemas/CreateCustomerOrderCommand"
               },
               "example": {
-                "site_variation": "default"
+                "site_variation": "default",
+                "idempotency_key": "6f1c2a7e-0b4d-4c55-9a1e-2f3d8b7c9e10"
               }
             }
           },
@@ -18963,7 +19306,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -19414,7 +19757,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -19732,7 +20075,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -20032,7 +20375,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -20266,6 +20609,298 @@
         "x-list": true
       }
     },
+    "/v2/dictionary/address/suggest": {
+      "post": {
+        "operationId": "dictionary_address_suggest",
+        "tags": [
+          "Dictionary"
+        ],
+        "responses": {
+          "200": {
+            "description": "AddressSuggestion collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "timestamp",
+                    "error",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Response time."
+                    },
+                    "error": {
+                      "type": "boolean",
+                      "const": false,
+                      "description": "Always `false` in a successful response; `true` in an error (`application/problem+json`)."
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AddressSuggestion"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "links": {}
+          },
+          "400": {
+            "description": "Malformed request.\n\nPossible `type`:\n- [`/api/problems/bad-request`](/api/problems/bad-request) — Malformed request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/bad-request"
+            ]
+          },
+          "401": {
+            "description": "Authentication required.\n\nPossible `type`:\n- [`/api/problems/unauthorized`](/api/problems/unauthorized) — Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/unauthorized"
+            ]
+          },
+          "422": {
+            "description": "Request validation failed, or a business rule rejected the request (`type` names the rule, `pointer` the value).\n\nPossible `type`:\n- [`/api/problems/validation-error`](/api/problems/validation-error) — Request validation failed\n- [`/api/problems/country-not-delivered`](/api/problems/country-not-delivered) — Site does not deliver to the country",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationProblem"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/validation-error",
+              "/api/problems/country-not-delivered"
+            ]
+          },
+          "429": {
+            "description": "Too many requests.\n\nPossible `type`:\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitProblem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before the next request.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/too-many-requests"
+            ]
+          },
+          "default": {
+            "description": "Error. The body follows RFC 9457, `type` names the kind of problem.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Suggest addresses",
+        "description": "Addresses for what the customer typed, in the fields of `customer-account/address/create`: in Russia with `city_id` (KLADR of the settlement), elsewhere with `city_name`. Russia, Belarus, Kazakhstan and Uzbekistan get full addresses down to the house and flat; other countries get mostly settlements and streets. `country` must be one the site delivers to (`dictionary/country/list`), else 422 `country-not-delivered`. If the suggestion service fails, the list is empty: let the customer type the address.",
+        "parameters": [],
+        "requestBody": {
+          "description": "Request: suggest addresses.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255,
+                    "default": "",
+                    "description": "What the customer typed: a city, street and house in any order, e.g. `Москва Тверская 1`; at least 3 characters."
+                  },
+                  "country": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Country of the address, ISO 3166-1 alpha-2, one of `dictionary/country/list`; by default the main country of the site."
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "format": "int32",
+                    "default": 10,
+                    "description": "How many suggestions to return, 1–20."
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "security": [
+          {
+            "SiteToken": []
+          },
+          {
+            "CustomerToken": []
+          }
+        ],
+        "x-list": true
+      }
+    },
     "/v2/dictionary/city/search": {
       "post": {
         "operationId": "dictionary_city_search",
@@ -20402,7 +21037,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -20569,6 +21204,298 @@
         "x-list": true
       }
     },
+    "/v2/dictionary/country/detect": {
+      "post": {
+        "operationId": "dictionary_country_detect",
+        "tags": [
+          "Dictionary"
+        ],
+        "responses": {
+          "200": {
+            "description": "DetectedCountry resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "timestamp",
+                    "error",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Response time."
+                    },
+                    "error": {
+                      "type": "boolean",
+                      "const": false,
+                      "description": "Always `false` in a successful response; `true` in an error (`application/problem+json`)."
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DetectedCountry"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "links": {}
+          },
+          "400": {
+            "description": "Malformed request.\n\nPossible `type`:\n- [`/api/problems/bad-request`](/api/problems/bad-request) — Malformed request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/bad-request"
+            ]
+          },
+          "401": {
+            "description": "Authentication required.\n\nPossible `type`:\n- [`/api/problems/unauthorized`](/api/problems/unauthorized) — Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/unauthorized"
+            ]
+          },
+          "422": {
+            "description": "Request validation failed, or a business rule rejected the request (`type` names the rule, `pointer` the value).\n\nPossible `type`:\n- [`/api/problems/validation-error`](/api/problems/validation-error) — Request validation failed\n- [`/api/problems/site-variation-unknown`](/api/problems/site-variation-unknown) — Unknown site variation",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationProblem"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/validation-error",
+              "/api/problems/site-variation-unknown"
+            ]
+          },
+          "429": {
+            "description": "Too many requests.\n\nPossible `type`:\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitProblem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before the next request.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "x-problem-types": [
+              "/api/problems/too-many-requests"
+            ]
+          },
+          "default": {
+            "description": "Error. The body follows RFC 9457, `type` names the kind of problem.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Detect the country of the customer",
+        "description": "The country to preselect in an app: by `latitude` and `longitude` of the device, else by the IP of the device — only with an app key or a customer or guest token received with it, since with a server key the IP is your server — else the main country of the site. Only a country the site delivers to is returned; a found country the site does not deliver to is skipped, and if the main country of the site is not among them, the first delivery country comes; a site without delivery countries gives its main country. `source` tells which way gave it. Pass `code` as `country` to delivery and order methods.",
+        "parameters": [],
+        "requestBody": {
+          "description": "Request: detect the country of the customer.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "latitude": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": -90,
+                    "maximum": 90,
+                    "description": "Latitude of the device, from −90 to 90; pass it with `longitude`."
+                  },
+                  "longitude": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": -180,
+                    "maximum": 180,
+                    "description": "Longitude of the device, from −180 to 180; pass it with `latitude`."
+                  },
+                  "site_variation": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 50,
+                    "description": "Site variation code (`settings/site-variation/list`): the country name is in its language; `null` or omitted — the default variation."
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "security": [
+          {
+            "SiteToken": []
+          },
+          {
+            "CustomerToken": []
+          }
+        ]
+      }
+    },
     "/v2/dictionary/country/list": {
       "post": {
         "operationId": "dictionary_country_list",
@@ -20705,7 +21632,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -20983,7 +21910,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -21295,7 +22222,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -21676,7 +22603,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -21809,6 +22736,61 @@
           "Order"
         ],
         "responses": {
+          "200": {
+            "description": "A repeat with the same `external_id` and the same items: the order placed earlier, with `replayed: true`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "timestamp",
+                    "error",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Response time."
+                    },
+                    "error": {
+                      "type": "boolean",
+                      "const": false,
+                      "description": "Always `false` in a successful response; `true` in an error (`application/problem+json`)."
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreatePartnerOrderResult"
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/ResponseMeta"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request id: the one sent in the request if it looks like an id, otherwise generated.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Requests allowed per window of 1 minute.",
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests left in the current window.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "links": {}
+          },
           "201": {
             "description": "Order resource created",
             "content": {
@@ -21931,7 +22913,7 @@
             ]
           },
           "403": {
-            "description": "Access denied.\n\nPossible `type`:\n- [`/api/problems/forbidden`](/api/problems/forbidden) — Access denied\n- [`/api/problems/subscription-expired`](/api/problems/subscription-expired) — Subscription of the site owner has expired\n- [`/api/problems/owner-not-allowed`](/api/problems/owner-not-allowed) — Site owner is not allowed to place orders\n- [`/api/problems/site-token-required`](/api/problems/site-token-required) — Site token required",
+            "description": "Access denied.\n\nPossible `type`:\n- [`/api/problems/forbidden`](/api/problems/forbidden) — Access denied\n- [`/api/problems/owner-not-allowed`](/api/problems/owner-not-allowed) — Site owner is not allowed to place orders\n- [`/api/problems/site-token-required`](/api/problems/site-token-required) — Site token required",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -21961,7 +22943,6 @@
             },
             "x-problem-types": [
               "/api/problems/forbidden",
-              "/api/problems/subscription-expired",
               "/api/problems/owner-not-allowed",
               "/api/problems/site-token-required"
             ]
@@ -22004,7 +22985,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -22118,7 +23099,7 @@
           }
         },
         "summary": "Place an order",
-        "description": "Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; an offer whose supplier does not pass stock (`quantity: 99` in `stock/*`) is not limited; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same body returns the order already created with status 200 and `replayed: true`; a different body gives 409 `/api/problems/external-id-conflict`. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; a site owner not allowed to place orders on the site gives 403 `/api/problems/owner-not-allowed`.",
+        "description": "Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; an offer whose supplier does not pass stock (`quantity: 99` in `stock/*`) is not limited; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same items (in any order), delivery method, and pick-up point and currency when passed returns the order already created with status 200 and `replayed: true`; a difference in them gives 409 `/api/problems/external-id-conflict`, the recipient is not compared. A canceled order does not hold its `external_id`: the same `external_id` places a new order. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; a site owner not allowed to place orders on the site gives 403 `/api/problems/owner-not-allowed`.",
         "parameters": [],
         "requestBody": {
           "description": "Request: place an order.",
@@ -22135,7 +23116,8 @@
           {
             "SiteToken": []
           }
-        ]
+        ],
+        "x-replay-200": "A repeat with the same `external_id` and the same items: the order placed earlier, with `replayed: true`."
       }
     },
     "/v2/order/list": {
@@ -22308,7 +23290,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -22736,7 +23718,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -23064,7 +24046,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -23395,7 +24377,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -23725,7 +24707,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -24054,7 +25036,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -24464,7 +25446,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -24844,7 +25826,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -25199,7 +26181,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -25621,7 +26603,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -25956,7 +26938,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -26351,7 +27333,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -26746,7 +27728,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -27141,7 +28123,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -27576,7 +28558,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -27908,7 +28890,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -28255,7 +29237,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -28767,7 +29749,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -29119,7 +30101,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -29625,7 +30607,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -30066,7 +31048,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -30379,7 +31361,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -30485,7 +31467,7 @@
           }
         },
         "summary": "Show site information",
-        "description": "The site of the token: domain, email, until when the subscription of the site owner is paid (`order/create` needs it), rules of AI texts, names and phones by site variation (`site_variations`), whether the storefront shows products without stock (`shows_out_of_stock_products`).",
+        "description": "The site of the token: domain, email, until when the subscription of the site owner is paid (informational: Site API orders do not check it), rules of AI texts, names and phones by site variation (`site_variations`), whether the storefront shows products without stock (`shows_out_of_stock_products`).",
         "parameters": [],
         "requestBody": {
           "description": "Request: show site information.",
@@ -30677,7 +31659,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -31006,7 +31988,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -31311,7 +32293,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -31607,7 +32589,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -31903,7 +32885,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -32232,7 +33214,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -32571,7 +33553,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -32868,7 +33850,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -32974,7 +33956,7 @@
           }
         },
         "summary": "List icons of settings",
-        "description": "Icons that `icon_name` of settings and rubrics refers to, with SVG in six styles. An `icon_name` not in the list is a name of the icon package of the admin panel.",
+        "description": "Icons that `icon_name` of settings and rubrics refers to, with SVG in six styles. An `icon_name` not in the list has no SVG in the API: show an icon of your own for it.",
         "parameters": [],
         "requestBody": {
           "description": "Request: list icons of settings.",
@@ -33212,7 +34194,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -33639,7 +34621,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -33971,7 +34953,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -34345,7 +35327,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -34452,7 +35434,7 @@
           }
         },
         "summary": "Save settings",
-        "description": "Saves values of settings in a site variation as one batch: all or none. A hidden setting gives 404, a read-only one or a value that does not pass the check — 422 with `pointer` to the item; a numeric setting takes only a number (`15`, `12.5`). A mask of a secret is skipped (`skipped: true`). A theme of the storefront is chosen with `default_theme` (`{\"themeId\": <id of settings/theme/list>}`).",
+        "description": "Saves values of settings in a site variation as one batch: all or none. A hidden setting gives 404, a read-only one or a value that does not pass the check — 422 with `pointer` to the item; `value` is stored as a string whatever its JSON type: `15` and `\"15\"` are the same, a boolean is stored as `true`/`false`, so a value read from `settings/variable/list` can be saved back as is. A mask of a secret is skipped (`skipped: true`). A theme of the storefront is chosen with `default_theme`: its `value` is a JSON string, e.g. `\"{\\\"themeId\\\": 5}\"` with the id from `settings/theme/list` (`themeId` inside the string keeps its case), and reads back as the same string.",
         "parameters": [],
         "requestBody": {
           "description": "Request: save settings.",
@@ -34723,7 +35705,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -35086,7 +36068,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -35430,7 +36412,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -35800,7 +36782,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -36031,7 +37013,15 @@
                       "min": "544.00",
                       "max": "7781.00",
                       "currency": "RUB"
-                    }
+                    },
+                    "rubrics": [
+                      {
+                        "id": 3120,
+                        "name": "Kitchen",
+                        "count": 5,
+                        "selected": false
+                      }
+                    ]
                   },
                   "meta": {
                     "request_id": "01M6GKXT4GC0YVXW693ZWYY9A1",
@@ -36172,7 +37162,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -36366,7 +37356,7 @@
                   "in_stock": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Only products in stock by the search index. The index lags behind live data: a product sold out after the last indexing still comes, with `available: false` — the storefront hides such a product itself, pages stay full and `meta.pager.total` stays honest. False — also products without stock, but only if the site shows them (`shows_out_of_stock_products` of `settings/info/show`); otherwise the same products as true."
+                    "description": "Only products in stock by the search index. The index lags behind live data: a product sold out after the last indexing still comes, with `available: false` — the storefront hides such a product itself, the product is not dropped from its page. False — also products without stock, but only if the site shows them (`shows_out_of_stock_products` of `settings/info/show`); otherwise the same products as true."
                   },
                   "discount_only": {
                     "type": "boolean",
@@ -36618,7 +37608,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -36895,6 +37885,7 @@
                       "variations": [
                         {
                           "id": 84624,
+                          "name": "Monitor 24″ black",
                           "description": "",
                           "price": "62179.00",
                           "old_price": "85005.00",
@@ -37069,7 +38060,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -37460,7 +38451,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -37701,6 +38692,7 @@
                       "variations": [
                         {
                           "id": 84624,
+                          "name": "Monitor 24″ black",
                           "description": "",
                           "price": "62179.00",
                           "old_price": "85005.00",
@@ -37881,7 +38873,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -37990,7 +38982,7 @@
           }
         },
         "summary": "Search products",
-        "description": "Products of the site found in the search index by text, rubric, brands, aspect values (`param_ids`: OR inside one aspect, AND between aspects), price, stock and discount, page by page (`meta.pager`), in the format of `stock/product/show`: prices and stock are current, not from the index. Every page is exactly the window of the index: a product the index has in stock but the live data does not comes with `available: false` instead of dropping out, so pages are full and their sum is `meta.pager.total`. A product closed for the site after the last indexing comes with `closed: true`; only a product unlinked from the site tree after the last indexing is left out, until the next indexing. The storefront hides a product with `available: false` itself; a product without `variations` cannot be sold now. With `sort` by price, products without a current price (`min_price: null`) go last on each page. A product added since the last indexing is not found yet: `stock/product/id/list` reads the database. Facets of the same selection (values with counts, brands, price range) — `stock/facet/list`. Pages go down to 10 000 products: to get all products use `stock/product/id/list` and `stock/product/batch-show`.",
+        "description": "Products of the site found in the search index by text, rubric, brands, aspect values (`param_ids`: OR inside one aspect, AND between aspects), price, stock and discount, page by page (`meta.pager`), in the format of `stock/product/show`: prices and stock are current, not from the index. Every page is the window of the index: a product the index has in stock but the live data does not comes with `available: false` instead of dropping out, and a product closed for the site after the last indexing comes with `closed: true`. Only a product unlinked from the site tree after the last indexing is left out, until the next indexing: then its page is one product shorter and `meta.pager.total`, the count of the index, is larger than the products you get. Stop at `meta.pager.pages`, not at a short page. The storefront hides a product with `available: false` itself; a product without `variations` cannot be sold now. With `sort` by price, products without a current price (`min_price: null`) go last on each page. A product added since the last indexing is not found yet: `stock/product/id/list` reads the database. Facets of the same selection (values with counts, brands, price range) — `stock/facet/list`. Pages go down to 10 000 products: a deeper page (`page` × `per_page` over 10 000) gives 422; to get all products use `stock/product/id/list` and `stock/product/batch-show`.",
         "parameters": [],
         "requestBody": {
           "description": "Request: search products.",
@@ -38076,7 +39068,7 @@
                   "in_stock": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Only products in stock by the search index. The index lags behind live data: a product sold out after the last indexing still comes, with `available: false` — the storefront hides such a product itself, pages stay full and `meta.pager.total` stays honest. False — also products without stock, but only if the site shows them (`shows_out_of_stock_products` of `settings/info/show`); otherwise the same products as true."
+                    "description": "Only products in stock by the search index. The index lags behind live data: a product sold out after the last indexing still comes, with `available: false` — the storefront hides such a product itself, the product is not dropped from its page. False — also products without stock, but only if the site shows them (`shows_out_of_stock_products` of `settings/info/show`); otherwise the same products as true."
                   },
                   "discount_only": {
                     "type": "boolean",
@@ -38211,6 +39203,7 @@
                     "variations": [
                       {
                         "id": 84624,
+                        "name": "Monitor 24″ black",
                         "description": "",
                         "price": "62179.00",
                         "old_price": "85005.00",
@@ -38417,7 +39410,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -38557,6 +39550,16 @@
                     "maxLength": 2000,
                     "description": "Storefront address or slug of the product instead of `product_id` (an app deep link): `https://shop.example/product/nike-air-a123#v456`, `/product/nike-air-a123` or `nike-air-a123` — the product id is the number after `-a` at the end of the path, any case."
                   },
+                  "product_variation_id": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "format": "int32",
+                    "maximum": 2147483647,
+                    "description": "A variation of the product (`content/link/resolve`, `#v<id>` of a link): with it `product_id` and `url` may be left out. A variation of another product gives 404. The card is the same, with all variations: select this one."
+                  },
                   "site_variation": {
                     "type": [
                       "string",
@@ -38656,6 +39659,7 @@
                         "variations": [
                           {
                             "id": 84624,
+                            "name": "Monitor 24″ black",
                             "description": "",
                             "price": "62179.00",
                             "old_price": "85005.00",
@@ -38870,7 +39874,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -39102,6 +40106,7 @@
                       "variations": [
                         {
                           "id": 84624,
+                          "name": "Monitor 24″ black",
                           "description": "",
                           "price": "62179.00",
                           "old_price": "85005.00",
@@ -39276,7 +40281,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "#/components/schemas/ValidationProblem"
                     },
@@ -39499,6 +40504,88 @@
             "type": "integer",
             "format": "int32",
             "maximum": 2147483647
+          }
+        }
+      },
+      "AddressSuggestion": {
+        "type": "object",
+        "required": [
+          "value",
+          "country",
+          "region",
+          "city_id",
+          "city_name",
+          "street",
+          "house",
+          "flat",
+          "zip"
+        ],
+        "properties": {
+          "value": {
+            "readOnly": true,
+            "description": "The address as one line, to show in the list.",
+            "type": "string"
+          },
+          "country": {
+            "readOnly": true,
+            "description": "ISO 3166-1 alpha-2 country code in upper case: pass it as `address.country`.",
+            "type": "string"
+          },
+          "region": {
+            "readOnly": true,
+            "description": "Region, e.g. `Московская обл`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "city_id": {
+            "readOnly": true,
+            "description": "Settlement KLADR id, Russia only: pass it as `address.city_id`; `null` outside Russia or when the suggestion has no settlement.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "city_name": {
+            "readOnly": true,
+            "description": "City or settlement name: pass it as `address.city_name` when there is no `city_id`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "street": {
+            "readOnly": true,
+            "description": "Street with its type, e.g. `ул Тверская`: `address.street`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "house": {
+            "readOnly": true,
+            "description": "House: `address.house`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "flat": {
+            "readOnly": true,
+            "description": "Flat: `address.flat`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "zip": {
+            "readOnly": true,
+            "description": "Postal code: `address.zip`.",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
@@ -39750,32 +40837,18 @@
             ]
           },
           "settings": {
-            "readOnly": true,
-            "description": "Page settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "context": {
-            "readOnly": true,
-            "description": "Block settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "markdown": {
             "readOnly": true,
@@ -39909,7 +40982,8 @@
             "enum": [
               "RUB",
               "USD",
-              "EUR"
+              "EUR",
+              null
             ],
             "description": "Price currency: `RUB`, `USD` or `EUR` that the site sells in for `country`; by default the primary currency of the site for it. A currency the site has not for the country gives 422 `#/currency` with the allowed ones.",
             "type": [
@@ -40039,7 +41113,7 @@
           },
           "link": {
             "readOnly": true,
-            "description": "Where the banner leads, as set in the editor: a storefront address (open it with `stock/product/show` `url`, `brand/show` `slug` or a search) or an external link.",
+            "description": "Where the banner leads, as set in the editor: a storefront address or an external link: pass it to `content/link/resolve` to know which screen to open.",
             "type": [
               "string",
               "null"
@@ -40228,7 +41302,8 @@
           "doc_type": {
             "enum": [
               "html",
-              "markdown"
+              "markdown",
+              null
             ],
             "description": "Format of the article: `html` (default) — pass the document in `html`, `styles`, `scripts`, `settings`, `context`; `markdown` — pass the source in `markdown`, the HTML is built from it (the document fields are not accepted), product widgets of the Markdown fill `tags_relink_auto`.",
             "type": [
@@ -40265,30 +41340,18 @@
             ]
           },
           "settings": {
-            "description": "Page settings of the document (`doc_type` `html`), a JSON object.",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "context": {
-            "description": "Block settings of the document (`doc_type` `html`), a JSON object.",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "publish_date": {
             "pattern": "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,6})?)?Z?(?:[+-]\\d{2}:\\d{2})?)$",
@@ -40508,6 +41571,13 @@
               "string",
               "null"
             ]
+          },
+          "idempotency_key": {
+            "description": "Your id of this checkout attempt, 8–64 characters `A-Z a-z 0-9 . _ : -` (a UUID fits). Repeat a request whose\nanswer was lost with the same key: for a day after the order was placed it returns the same order with\n`replayed: true` instead of placing a second one, without comparing the body. The key belongs to the site and\nthe customer (a guest — to the guest): after the guest signs in, the guest key no longer finds the order, look\nit up in `customer-order/list`. After the day the same key places a new order: do not repeat an old key\nautomatically, check `customer-order/list` first. A refused request (422) frees the key. A new order needs a\nnew key.",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
@@ -40555,17 +41625,11 @@
             ]
           },
           "context": {
-            "description": "Settings and bindings of the blocks, a JSON object: `{\"blocks\": {\"N\": {\"props\": …, \"binding\": …}}}`.",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "active": {
             "description": "Active: an inactive template is skipped on the storefront; omitted — `true`.",
@@ -40626,7 +41690,8 @@
             "enum": [
               "RUB",
               "USD",
-              "EUR"
+              "EUR",
+              null
             ],
             "description": "Order currency: `RUB`, `USD` or `EUR` that the site sells in for the recipient country; by default the primary currency of the site for it. Another currency gives 422 `#/currency` with the allowed ones, before anything is saved.",
             "type": [
@@ -40650,7 +41715,7 @@
           },
           "replayed": {
             "readOnly": true,
-            "description": "`true` — the request repeats an earlier one with the same `external_id` and the same body: no new order\nis placed, the earlier order is returned with status 200 (a new order gives 201).",
+            "description": "`true` — the request repeats an earlier one with the same `external_id`, items, delivery method, pick-up point and currency (the recipient is not\ncompared): no new order is placed, the earlier order is returned with status 200 (a new order gives 201).",
             "type": "boolean"
           }
         }
@@ -41095,7 +42160,7 @@
           },
           "email": {
             "format": "email",
-            "description": "Recipient email; omitted — the email of the customer. The checkout skips addresses without an email.",
+            "description": "Recipient email; omitted — the email of the customer. Required for a guest and a customer without an email: the checkout skips addresses without one.",
             "externalDocs": {
               "url": "https://schema.org/email"
             },
@@ -41926,7 +42991,8 @@
         "type": "object",
         "required": [
           "order_id",
-          "payment_url"
+          "payment_url",
+          "replayed"
         ],
         "properties": {
           "order_id": {
@@ -41938,6 +43004,11 @@
             "readOnly": true,
             "description": "Payment page of the site for the chosen payment method.",
             "type": "string"
+          },
+          "replayed": {
+            "readOnly": true,
+            "description": "`true` — the order was placed earlier with the same `idempotency_key` and is returned again, nothing new was created.",
+            "type": "boolean"
           }
         }
       },
@@ -42296,7 +43367,7 @@
           },
           "refresh_token": {
             "readOnly": true,
-            "description": "One-time token for `customer-auth/refresh` and `customer-auth/sign-out`: keep it secret, on the server side of the site.",
+            "description": "One-time token for `customer-auth/refresh` and `customer-auth/sign-out`: keep it secret: on your server for a server integration, in the secure storage of the device (Keychain, Keystore) for an app; never log it.",
             "type": "string"
           },
           "refresh_expires_in": {
@@ -42692,6 +43763,36 @@
           }
         }
       },
+      "DetectedCountry": {
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "source"
+        ],
+        "properties": {
+          "code": {
+            "readOnly": true,
+            "description": "ISO 3166-1 alpha-2 country code in upper case, e.g. `RU`: pass it as `country`.",
+            "type": "string"
+          },
+          "name": {
+            "readOnly": true,
+            "description": "Country name in the requested language, e.g. `Russia`.",
+            "type": "string"
+          },
+          "source": {
+            "readOnly": true,
+            "description": "What gave the country: `coordinates` — `latitude` and `longitude`; `ip` — the IP of the device (an app key, or a customer or guest token received with it); `default` — the main country of the site, when nothing else gave a country the site delivers to.",
+            "type": "string",
+            "enum": [
+              "coordinates",
+              "ip",
+              "default"
+            ]
+          }
+        }
+      },
       "DocTemplateItem": {
         "type": "object",
         "required": [
@@ -42812,18 +43913,11 @@
             ]
           },
           "context": {
-            "readOnly": true,
-            "description": "Settings and bindings of the blocks, a JSON object: `{\"blocks\": {\"N\": {\"props\": …, \"binding\": …}}}` (an empty object nested in it comes back as `[]`); `null` — not set.",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "created_at": {
             "readOnly": true,
@@ -42851,7 +43945,7 @@
         "properties": {
           "token": {
             "readOnly": true,
-            "description": "Guest token for `X-Customer-Auth-Token`: opens `customer-cart/show` and `customer-cart/item/*`, valid for `expires_in` seconds. Pass it as `guest_token` to `customer-auth/confirm` (after `sign-in` by phone or `sign-up`) or to `customer-auth/sign-in` by email and password to keep the cart.",
+            "description": "Guest token for `X-Customer-Auth-Token`: opens `customer-cart/*`, `customer-account/address/*`, `customer-order/create`, `list` and `show`, valid for `expires_in` seconds. Pass it as `guest_token` to `customer-auth/confirm` (after `sign-in` by phone or `sign-up`) or to `customer-auth/sign-in` by email and password to keep the cart.",
             "type": "string"
           },
           "expires_in": {
@@ -42933,6 +44027,85 @@
             "items": {
               "type": "integer"
             }
+          }
+        }
+      },
+      "LinkSearch": {
+        "type": "object",
+        "required": [
+          "query",
+          "rubric_id",
+          "brand_ids",
+          "param_ids",
+          "price_from",
+          "price_to",
+          "in_stock",
+          "discount_only",
+          "sort"
+        ],
+        "properties": {
+          "query": {
+            "readOnly": true,
+            "description": "Search text of a search link.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rubric_id": {
+            "readOnly": true,
+            "description": "Rubric of the site tree.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "brand_ids": {
+            "readOnly": true,
+            "description": "Brands, e.g. a brand page or a brand in a rubric.",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "param_ids": {
+            "readOnly": true,
+            "description": "Aspect values of the filter.",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "price_from": {
+            "readOnly": true,
+            "description": "Price from.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "price_to": {
+            "readOnly": true,
+            "description": "Price to.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "in_stock": {
+            "readOnly": true,
+            "description": "Only products in stock.",
+            "type": "boolean"
+          },
+          "discount_only": {
+            "readOnly": true,
+            "description": "Only discounted products: a sale link.",
+            "type": "boolean"
+          },
+          "sort": {
+            "readOnly": true,
+            "description": "Sort of the storefront link: `popular`, `new`, `price_asc`, `price_desc`, `discount`; `relevance` when the link has none.",
+            "type": "string"
           }
         }
       },
@@ -43680,7 +44853,8 @@
             "enum": [
               "RUB",
               "USD",
-              "EUR"
+              "EUR",
+              null
             ],
             "description": "Deposit currency to charge; by default the order currency.",
             "type": [
@@ -44380,6 +45554,7 @@
         "type": "object",
         "required": [
           "id",
+          "name",
           "description",
           "price",
           "old_price",
@@ -44399,9 +45574,14 @@
             "description": "Product variation id. Its page on the site is `url` of the product with `#v<id>`.",
             "type": "integer"
           },
+          "name": {
+            "readOnly": true,
+            "description": "Variation name in the language of `site_variation`: the name the site set (`product/variation/update`, as the storefront shows it), else the common translation, else the source name.",
+            "type": "string"
+          },
           "description": {
             "readOnly": true,
-            "description": "Variation description, the source text.",
+            "description": "Variation description in the language of `site_variation`, as the storefront shows it: the description the site set, else the common translation, else the source text. HTML is not cleaned.",
             "type": "string"
           },
           "price": {
@@ -44747,6 +45927,82 @@
         "required": [
           "site_variation"
         ]
+      },
+      "ResolvedLink": {
+        "type": "object",
+        "required": [
+          "type",
+          "url",
+          "product_id",
+          "product_variation_id",
+          "article_id",
+          "search",
+          "site_variation"
+        ],
+        "properties": {
+          "type": {
+            "readOnly": true,
+            "description": "The screen: `product`, `products`, `article`, `home`, `page` or `external`.",
+            "type": "string",
+            "enum": [
+              "product",
+              "products",
+              "article",
+              "home",
+              "page",
+              "external"
+            ]
+          },
+          "url": {
+            "readOnly": true,
+            "description": "The link as an absolute URL: open it in a browser for `page` and `external`.",
+            "type": "string"
+          },
+          "product_id": {
+            "readOnly": true,
+            "description": "Product of a `product` link.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "product_variation_id": {
+            "readOnly": true,
+            "description": "Variation of a `product` link that names one (`#v<id>`, `/p-<id>`); `null` — the product card chooses.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "article_id": {
+            "readOnly": true,
+            "description": "Article of an `article` link.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "search": {
+            "readOnly": true,
+            "description": "Body of `stock/product/search` for a `products` link: rubric, brands, filters and sort of the storefront page.",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LinkSearch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "site_variation": {
+            "readOnly": true,
+            "description": "Site variation of the link (its folder or subdomain): pass it as `site_variation` to the next request; `null` — the link has none, keep the variation of the app.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
       },
       "RubricAncestor": {
         "type": "object",
@@ -46141,7 +47397,7 @@
             "type": "string"
           },
           "value": {
-            "description": "Value; null or empty — empty value (allowed for a nullable variable). A file — a base64 data URL.",
+            "description": "Value; null or empty — empty value (allowed for a nullable variable). A file — a base64 data URL. Stored as a string: a number and the same number in a string are equal, a boolean becomes `true`/`false`, a structured setting is a JSON string.",
             "anyOf": [
               {
                 "type": "boolean"
@@ -46255,7 +47511,7 @@
           },
           "type": {
             "readOnly": true,
-            "description": "Value type: `string`, `text`, `textarea`, `switch`, `select`, `twig`, `file`, …",
+            "description": "Value type: `text`, `textarea`, `text_markdown`, `select`, `switch`, `twig`, `file`, `product_card_config`, `product_carousel_presets`, `mini_card_presets`; older settings may have `string`. `value` comes as a string; structured types are a JSON string, save them back as the same string. Treat an unknown type as text.",
             "type": "string"
           },
           "scope": {
@@ -46718,30 +47974,18 @@
             ]
           },
           "settings": {
-            "description": "Page settings of the document of an HTML article, a JSON object (replaced as a whole).",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "context": {
-            "description": "Block settings of the document of an HTML article, a JSON object (replaced as a whole).",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "publish_date": {
             "pattern": "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,6})?)?Z?(?:[+-]\\d{2}:\\d{2})?)$",
@@ -47092,7 +48336,8 @@
             "enum": [
               "male",
               "female",
-              ""
+              "",
+              null
             ],
             "description": "Gender: `male` or `female`; omitted — stays as it is, empty string — removed.",
             "type": [
@@ -47137,7 +48382,8 @@
             "enum": [
               "rubric",
               "product",
-              "layout"
+              "layout",
+              null
             ],
             "description": "Kind: a page type (`rubric` — catalog pages, rubrics and brands; `product` — product card) or `layout` — a wrapper of the page with `{{ content }}` in `html`. The kind of a template assigned to rubrics or brands cannot be changed (409).",
             "type": [
@@ -47177,17 +48423,11 @@
             ]
           },
           "context": {
-            "description": "Settings and bindings of the blocks, a JSON object: `{\"blocks\": {\"N\": {\"props\": …, \"binding\": …}}}`.",
             "type": [
               "object",
               "null"
             ],
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
+            "additionalProperties": true
           },
           "active": {
             "description": "Active: an inactive template is skipped on the storefront; omitted or `null` — unchanged.",
@@ -48172,7 +49412,7 @@
       },
       "ResponseUsage": {
         "type": "object",
-        "description": "Request rate limit after this request: a sliding window of 1 minute, counted per API group and per token owner (the site or the customer in Site API, the user in AdminApi); requests without a token are counted per client IP and User-Agent.",
+        "description": "Request rate limit after this request: a sliding window of 1 minute, counted per API group and per token owner (the site or the customer in Site API, the user in AdminApi); requests that need no token (the documentation) are counted per client IP and User-Agent; a request refused for a missing or not accepted token is not counted. Only this minute counter is in `usage`; hourly limits of an operation are reported by its 429.",
         "required": [
           "limit",
           "used",
@@ -48252,9 +49492,10 @@
               "/api/problems/customer-token-required",
               "/api/problems/site-token-required",
               "/api/problems/sign-in-locked",
+              "/api/problems/code-not-sent",
               "about:blank"
             ],
-            "description": "Stable identifier of the problem type: branch on it, not on `detail`. A URI reference relative to the API host: `GET` it for the page of the type (HTML, or JSON with `Accept: application/json`), all types — `/api/problems`.\n\n- [`/api/problems/bad-request`](/api/problems/bad-request) — 400, **Malformed request**. The request cannot be read: the body is not valid JSON or not a JSON object, or a parameter has an empty or malformed value. When: Any operation, before the request reaches business rules. Fix: Send a JSON object with `Content-Type: application/json` and check the part named in `detail`. The same request will fail again.\n- [`/api/problems/unauthorized`](/api/problems/unauthorized) — 401, **Authentication required**. The request has no token, or the token is not accepted: unknown, disabled, of another site, or an expired customer token. When: Any operation except the documentation. The site token goes in `X-Auth-Token`, the customer token in `X-Customer-Auth-Token`. Fix: Pass the token the operation expects: the site token in `X-Auth-Token`, the customer token in `X-Customer-Auth-Token` (`detail` names it). A disabled site token stays rejected: ask 4Partners support for a new one. An expired customer token: renew it with `customer-auth/refresh`; a revoked one (sign-out, password change, disabled site token): sign the customer in again with `customer-auth/sign-in`.\n- [`/api/problems/forbidden`](/api/problems/forbidden) — 403, **Access denied**. The token is valid but does not open this operation, or the site cannot do it. When: A customer token on a site operation or the other way round: `customer-account/*`, `customer-cart/*` and `customer-order/*` need `X-Customer-Auth-Token`, the rest need the site token. Orders and the deposit of a site without a partner owner. Fix: Call the operation with the token it expects (`security` of the operation in the specification). A site without an owner: contact 4Partners support.\n- [`/api/problems/not-found`](/api/problems/not-found) — 404, **Resource not found**. The object with this id does not exist or belongs to another site (the two are not told apart), or the path is unknown. When: Operations that take an id (`order_id`, `product_id`, `rubric_id` and others), and any unknown path. Fix: Take the id from a list operation of the same site (`order/list`, `stock/product/id/list`, `rubric/list`…) and check the path in the specification. The same id will not be found again.\n- [`/api/problems/method-not-allowed`](/api/problems/method-not-allowed) — 405, **Method not allowed**. The path exists, but not for this HTTP method. The `Allow` header lists the allowed methods. When: Any operation called not with `POST`: every Site API operation is `POST` with a JSON body. Fix: Send `POST` with a JSON body.\n- [`/api/problems/not-acceptable`](/api/problems/not-acceptable) — 406, **Response format not acceptable**. The response format asked for in `Accept` is not supported: the API answers JSON only. When: Any operation with `Accept` that does not allow JSON. Fix: Send `Accept: application/json` or leave the header out.\n- [`/api/problems/conflict`](/api/problems/conflict) — 409, **Conflict with the current state**. The request is valid, but the current state of the object does not allow it. When: Deleting a rubric with child rubrics, deleting a page article (main, 404), canceling an order placed by a customer, and similar. Fix: Do what `detail` says first (for example, move the child rubrics), then repeat. The same request will get the same answer.\n- [`/api/problems/unsupported-media-type`](/api/problems/unsupported-media-type) — 415, **Unsupported request format**. The body format in `Content-Type` is not supported: the API reads JSON only. When: Any operation with a body. Fix: Send the body as JSON with `Content-Type: application/json`.\n- [`/api/problems/validation-error`](/api/problems/validation-error) — 422, **Request validation failed**. Values of the request are invalid. Each one is listed in `errors`: `pointer` (JSON Pointer to the value in the body) or `parameter` (query parameter) and `detail`: what is wrong and what to pass. Branch on `pointer`, not on the text. When: Any operation with a body: a required field is missing, a value has a wrong type or is out of range, a key is unknown. Fix: Fix every value listed in `errors` and send again. Branch on `pointer`, not on `detail`.\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — 429, **Too many requests**. The rate limit is exceeded. `usage` has the limit and how much is used, `Retry-After` — seconds to wait. When: Any operation: the limit is per site (all its tokens share it) and operation group; per customer in customer groups. Fix: Wait `Retry-After` seconds and repeat. Use batch operations (`stock/product/batch-show`, `stock/list`, `order/batch-show`) instead of many single calls.\n- [`/api/problems/internal-error`](/api/problems/internal-error) — 500, **Internal server error**. The server failed to process the request; a change may or may not have been made. `request_id` identifies the request in our logs. When: Any operation, on an unexpected failure. Fix: Repeat later with a growing pause. Before repeating a change, read the object (for example, `order/show`) so as not to do it twice. If it repeats, send `request_id` to 4Partners support.\n- [`/api/problems/business-rule`](/api/problems/business-rule) — 422, **Rejected by a business rule**. The request is valid, but a business rule rejects it. `detail` names the rule and what to change, `pointer` (if present) — the value of the body. When: Write operations and some reads: a product variation not on the site, a quantity above the stock, a country the site does not deliver to, nothing to update. Fix: Change the request as `detail` says. The same request will be rejected again.\n- [`/api/problems/subscription-expired`](/api/problems/subscription-expired) — 403, **Subscription of the site owner has expired**. The subscription of the site owner has expired: partner orders are not placed. When: `order/create`. Fix: Renew the subscription in the 4Partners partner account, then repeat. A repeat with the `external_id` of an order created before still returns that order.\n- [`/api/problems/owner-not-allowed`](/api/problems/owner-not-allowed) — 403, **Site owner is not allowed to place orders**. The site owner is not allowed to place partner orders on this site. When: `order/create`. Fix: Ask 4Partners support to allow orders for the site owner.\n- [`/api/problems/deposit-insufficient`](/api/problems/deposit-insufficient) — 409, **Not enough deposit**. The deposit of the site owner has not enough money to pay the order. Nothing was charged. When: `order/pay`. Fix: Top up the deposit by at least the difference in `detail` (balance — `balance/show`, amount to pay — `deposit_due` of `order/show`), then repeat `order/pay`.\n- [`/api/problems/order-already-paid`](/api/problems/order-already-paid) — 409, **Order is already paid**. The order is already paid: it is not charged again, and the customer cannot cancel it. When: `order/pay`; `customer-order/cancel` of a paid order. Fix: `order/pay`: nothing to do, the payment is done (`deposit_paid` of `order/show` shows the charged amount). `customer-order/cancel`: the customer cannot cancel a paid order; the shop cancels it and refunds the payment.\n- [`/api/problems/order-canceled`](/api/problems/order-canceled) — 409, **Order is canceled**. The order is canceled and cannot be paid. When: `order/pay`. Fix: Place a new order with `order/create` (with a new `external_id`).\n- [`/api/problems/order-shipped`](/api/problems/order-shipped) — 409, **Order is shipped**. The order is sent to the recipient or delivered, so the partner cannot cancel it. When: `order/cancel` of an order with status `sent`, `sent_msk` or `delivered`. Fix: The order is on its way: ask 4Partners support to arrange a return.\n- [`/api/problems/price-below-site-price`](/api/problems/price-below-site-price) — 422, **Price is below the site price**. The price of an item is below the current price of the product on the site. `pointer` names the item. When: `order/create` with `price` in an item. Fix: Leave `price` out (or pass `0`) to use the site price, or pass a price not lower than the current one from `stock/list`.\n- [`/api/problems/pick-up-point-required`](/api/problems/pick-up-point-required) — 422, **Pick-up point required**. The delivery method delivers to pick-up points, but `pick_up_point_id` is missing and no point was chosen automatically. When: `order/create`; `customer-order/create` when a package of the checkout has a pick-up method without a chosen point. Fix: Pass `pick_up_point_id` from `delivery/pick-up-point/list` for this delivery method; on the customer path — from `customer-cart/pick-up-point/list` to `customer-cart/checkout/update`.\n- [`/api/problems/external-id-conflict`](/api/problems/external-id-conflict) — 409, **Order with this external id differs**. An order with this `external_id` already exists and differs from the request (items, delivery method, pick-up point or currency). A repeat with the same body returns the existing order with `replayed`. When: `order/create` with `external_id`. Fix: A new order needs a new `external_id`. The existing order: `order/show` with the id from `detail`.\n- [`/api/problems/delivery-unavailable`](/api/problems/delivery-unavailable) — 422, **Delivery method cannot deliver**. The delivery method cannot carry this order or product: the parcel is heavier than the tariff allows, the method does not deliver to the country, or it does not ship from the warehouse of an item. `pointer` names the value to change. When: `order/create`, `order/pay` (the tariff is checked again at payment), `delivery/calculate`, `customer-cart/item/create`. Fix: Choose another method from `delivery/calculate` for the same items and country, or split the order. An order that cannot be paid: cancel it with `order/cancel` and place it again with another method. Nothing was charged.\n- [`/api/problems/country-not-delivered`](/api/problems/country-not-delivered) — 422, **Site does not deliver to the country**. The country of the request is not among the delivery countries of the site. `pointer` names the field with the country. When: `delivery/calculate`, `order/create`, `dictionary/city/search`. Fix: Take a country from `dictionary/country/list`.\n- [`/api/problems/variation-unavailable`](/api/problems/variation-unavailable) — 422, **Product variation is not sold on the site**. The product variation does not exist or has no offer of a supplier of the site, so it cannot be priced, delivered or ordered. `pointer` names the item. When: `delivery/calculate`, `delivery/pick-up-point/list` with items, `order/create`. Fix: Remove the item or take product variation ids from `stock/product/show` or `stock/list`.\n- [`/api/problems/delivery-method-not-on-site`](/api/problems/delivery-method-not-on-site) — 422, **Delivery method is not enabled on the site**. The delivery method exists but is not enabled on the site: the site has no tariff for it. `pointer` — `delivery_method_id`. When: `delivery/pick-up-point/list`, `order/create`. Fix: Take `delivery_method_id` from `dictionary/delivery-method/list` or `delivery/calculate`.\n- [`/api/problems/pick-up-not-supported`](/api/problems/pick-up-not-supported) — 422, **Delivery method has no pick-up points**. The delivery method delivers to the door, while the request is about pick-up points. `pointer` names the field to change. When: `delivery/pick-up-point/list` with a door delivery method, `order/create` with `pick_up_point_id` and a door delivery method. Fix: For pick-up points take a method with `with_pick_up_points: true` (`type: pick_up_point` in `delivery/calculate`); with a door method leave `pick_up_point_id` out.\n- [`/api/problems/rubric-not-in-tree`](/api/problems/rubric-not-in-tree) — 422, **Rubric is not in the tree**. The rubric is not a rubric of the tree the operation works with (the site tree, or the tree of the source store of `store_id`): it belongs to another tree, or it does not exist. `pointer` names the rubric in the body. When: `product/rubric/link`, `product/rubric/unlink`, `product/primary-rubric/update`; `rubric_id` of `stock/product/search`, `stock/facet/list`, `stock/product/id/list`, `rubric/aspect/list`, `rubric/brand/show`, `rubric/brand/update`; `parent_id` of `rubric/create`, `rubric/move`, `rubric/list`, `rubric/search`; `parent_id` of `source/store-rubric/list` and `rubric_id` of `stock/product/id/list` with `store_id` — the tree of the source store. Fix: Take rubric ids from `rubric/list` or `rubric/search`, rubrics of a source store — from `source/store-rubric/list` with the same `store_id`.\n- [`/api/problems/rubric-inactive`](/api/problems/rubric-inactive) — 422, **Rubric is inactive**. The rubric of the site tree is inactive, and the operation needs an active one: an inactive rubric is not shown on the storefront. When: `product/primary-rubric/update`: the main rubric must be shown on the storefront. `product/rubric/link` accepts an inactive rubric. Fix: Activate the rubric with `rubric/activate`, or choose an active one from `rubric/list`.\n- [`/api/problems/rubric-in-use`](/api/problems/rubric-in-use) — 409, **Rubric is in use**. The rubric is used by settings of the platform that are not deleted together with it (banners, brand and supplier lists of the rubric, filters, source store links, exports): deleting it would break them. `detail` lists what uses the rubric. When: `rubric/delete`. Fix: Turn the rubric off with `rubric/deactivate` instead: it disappears from the storefront and keeps the settings. To delete it, ask the support to remove the listed settings first.\n- [`/api/problems/no-products-accepted`](/api/problems/no-products-accepted) — 422, **No product can be processed**. None of `product_ids` fits the operation: the products do not exist, or (for operations on products of the site) they are not in the site tree. Nothing was changed. When: `product/rubric/link` and `product/primary-rubric/update` — no product of `product_ids` exists; `product/rubric/unlink` — none is in the site tree. Fix: Take ids of products of the site from `stock/product/id/list`, products to add to the site — from `stock/product/search` or `source/store-rubric/list`.\n- [`/api/problems/site-variation-unknown`](/api/problems/site-variation-unknown) — 422, **Unknown site variation**. The site has no variation with the code passed in `site_variation`. When: Any operation with `site_variation`: products, texts, aspects, dictionaries, the customer path. Fix: Take a code from `settings/site-variation/list`, or leave `site_variation` out for the default variation.\n- [`/api/problems/customer-token-required`](/api/problems/customer-token-required) — 403, **Customer token required**. The operation acts for a customer and opens only with the customer token in `X-Customer-Auth-Token`; the site token was passed instead. When: `customer-account/*`, `customer-cart/*`, `customer-order/*` called with `X-Auth-Token` and without `X-Customer-Auth-Token`. Fix: Sign the customer in with `customer-auth/sign-in` (with the site token) and pass the issued token in `X-Customer-Auth-Token`.\n- [`/api/problems/site-token-required`](/api/problems/site-token-required) — 403, **Site token required**. The operation acts for the site and opens only with the site token in `X-Auth-Token`; only a customer token was passed. When: Any operation except `customer-account/*`, `customer-cart/*`, `customer-order/*` and `dictionary/*` called with `X-Customer-Auth-Token` and without `X-Auth-Token`. Fix: Pass the site token in `X-Auth-Token`; a customer token sent with it does not disturb.\n- [`/api/problems/sign-in-locked`](/api/problems/sign-in-locked) — 429, **Sign-in temporarily locked**. Too many failed attempts to sign in with this email or phone (or to confirm the old password): signing in by it is locked for a while. The rate limit of operations is separate. When: `customer-auth/sign-in` by email, `customer-auth/confirm`, `customer-account/password/update` after 5 attempts without a success within 15 minutes for one email, phone or customer; sign-in by password and code — after 300 failures within 15 minutes through one site token. Fix: Wait `Retry-After` seconds. A customer who forgot the password resets it with `customer-auth/password/reset`.\n- `about:blank` — any other status (for example 502): see `title` and `detail`.",
+            "description": "Stable identifier of the problem type: branch on it, not on `detail`. A URI reference relative to the API host: `GET` it for the page of the type (HTML, or JSON with `Accept: application/json`), all types — `/api/problems`.\n\n- [`/api/problems/bad-request`](/api/problems/bad-request) — 400, **Malformed request**. The request cannot be read: the body is not valid JSON or not a JSON object, or a parameter has an empty or malformed value. When: Any operation, before the request reaches business rules. Fix: Send a JSON object with `Content-Type: application/json` and check the part named in `detail`. The same request will fail again.\n- [`/api/problems/unauthorized`](/api/problems/unauthorized) — 401, **Authentication required**. The request has no token, or the token is not accepted: unknown, disabled, of another site, or an expired customer token. Also a wrong email or password, a wrong code or an unknown `confirmation_id` in `customer-auth/*`. When: Any operation except the documentation. The site token goes in `X-Auth-Token`, the customer token in `X-Customer-Auth-Token`. Fix: Pass the token the operation expects: the site token in `X-Auth-Token`, the customer token in `X-Customer-Auth-Token` (`detail` names it). A disabled site token stays rejected: ask 4Partners support for a new one. An expired customer token: renew it with `customer-auth/refresh`; a revoked one (sign-out, password change, disabled site token): sign the customer in again with `customer-auth/sign-in`.\n- [`/api/problems/forbidden`](/api/problems/forbidden) — 403, **Access denied**. The token is valid but does not open this operation, or the site cannot do it. When: A customer token on a site operation or the other way round: `customer-account/*`, `customer-cart/*` and `customer-order/*` need `X-Customer-Auth-Token`, the rest need the site token. Orders and the deposit of a site without a partner owner. Fix: Call the operation with the token it expects (`security` of the operation in the specification). A site without an owner: contact 4Partners support.\n- [`/api/problems/not-found`](/api/problems/not-found) — 404, **Resource not found**. The object with this id does not exist or belongs to another site (the two are not told apart), or the path is unknown. When: Operations that take an id (`order_id`, `product_id`, `rubric_id` and others), and any unknown path. Fix: Take the id from a list operation of the same site (`order/list`, `stock/product/id/list`, `rubric/list`…) and check the path in the specification. The same id will not be found again.\n- [`/api/problems/method-not-allowed`](/api/problems/method-not-allowed) — 405, **Method not allowed**. The path exists, but not for this HTTP method. The `Allow` header lists the allowed methods. When: Any operation called not with `POST`: every Site API operation is `POST` with a JSON body. Fix: Send `POST` with a JSON body.\n- [`/api/problems/not-acceptable`](/api/problems/not-acceptable) — 406, **Response format not acceptable**. The response format asked for in `Accept` is not supported: the API answers JSON only. When: Any operation with `Accept` that does not allow JSON. Fix: Send `Accept: application/json` or leave the header out.\n- [`/api/problems/conflict`](/api/problems/conflict) — 409, **Conflict with the current state**. The request is valid, but the current state of the object does not allow it. When: Deleting a rubric with child rubrics, deleting a page article (main, 404), canceling an order placed by a customer, and similar. Fix: Do what `detail` says first (for example, move the child rubrics), then repeat. The same request will get the same answer.\n- [`/api/problems/unsupported-media-type`](/api/problems/unsupported-media-type) — 415, **Unsupported request format**. The body format in `Content-Type` is not supported: the API reads JSON only. When: Any operation with a body. Fix: Send the body as JSON with `Content-Type: application/json`.\n- [`/api/problems/validation-error`](/api/problems/validation-error) — 422, **Request validation failed**. Values of the request are invalid. Each one is listed in `errors`: `pointer` (JSON Pointer to the value in the body) or `parameter` (query parameter) and `detail`: what is wrong and what to pass. Branch on `pointer`, not on the text. When: Any operation with a body: a required field is missing, a value has a wrong type or is out of range, a key is unknown. Fix: Fix every value listed in `errors` and send again. Branch on `pointer`, not on `detail`.\n- [`/api/problems/too-many-requests`](/api/problems/too-many-requests) — 429, **Too many requests**. The rate limit is exceeded. `usage` has the limit and how much is used, `Retry-After` — seconds to wait. When: Any operation: 600 a minute per operation group — per site with a server key, per key and client IP with an app key, per customer or guest in customer groups; with an app key also the hourly limits of new guests and guest orders per client IP (sign-in codes over their limit give `sign-in-locked`). Fix: Wait `Retry-After` seconds and repeat. Use batch operations (`stock/product/batch-show`, `stock/list`, `order/batch-show`) instead of many single calls.\n- [`/api/problems/internal-error`](/api/problems/internal-error) — 500, **Internal server error**. The server failed to process the request; a change may or may not have been made. `request_id` identifies the request in our logs. When: Any operation, on an unexpected failure. Fix: Repeat later with a growing pause. Before repeating a change, read the object (for example, `order/show`) so as not to do it twice. If it repeats, send `request_id` to 4Partners support.\n- [`/api/problems/business-rule`](/api/problems/business-rule) — 422, **Rejected by a business rule**. The request is valid, but a business rule rejects it. `detail` names the rule and what to change, `pointer` (if present) — the value of the body. When: Write operations and some reads: a product variation not on the site, a quantity above the stock, a country the site does not deliver to, nothing to update. Fix: Change the request as `detail` says. The same request will be rejected again.\n- [`/api/problems/subscription-expired`](/api/problems/subscription-expired) — 403, **Subscription of the site owner has expired**. The subscription of the site owner has expired. Site API does not check the subscription: no operation of this API returns this type. When: No operation of Site API: the subscription is not checked (`subscription_paid_until` of `settings/info/show` is for information). Fix: Renew the subscription in the 4Partners partner account, then repeat. A repeat with the `external_id` of an order created before still returns that order.\n- [`/api/problems/owner-not-allowed`](/api/problems/owner-not-allowed) — 403, **Site owner is not allowed to place orders**. The site owner is not allowed to place partner orders on this site. When: `order/create`. Fix: Ask 4Partners support to allow orders for the site owner.\n- [`/api/problems/deposit-insufficient`](/api/problems/deposit-insufficient) — 409, **Not enough deposit**. The deposit of the site owner has not enough money to pay the order. Nothing was charged. When: `order/pay`. Fix: Top up the deposit by at least the difference in `detail` (balance — `balance/show`, amount to pay — `deposit_due` of `order/show`), then repeat `order/pay`.\n- [`/api/problems/order-already-paid`](/api/problems/order-already-paid) — 409, **Order is already paid**. The order is already paid: it is not charged again, and the customer cannot cancel it. When: `order/pay`; `customer-order/cancel` of a paid order. Fix: `order/pay`: nothing to do, the payment is done (`deposit_paid` of `order/show` shows the charged amount). `customer-order/cancel`: the customer cannot cancel a paid order; the shop cancels it and refunds the payment.\n- [`/api/problems/order-canceled`](/api/problems/order-canceled) — 409, **Order is canceled**. The order is canceled and cannot be paid. When: `order/pay`. Fix: Place a new order with `order/create` (with a new `external_id`).\n- [`/api/problems/order-shipped`](/api/problems/order-shipped) — 409, **Order is shipped**. The order is sent to the recipient or delivered, so the partner cannot cancel it. When: `order/cancel` of an order with status `sent`, `sent_msk` or `delivered`. Fix: The order is on its way: ask 4Partners support to arrange a return.\n- [`/api/problems/price-below-site-price`](/api/problems/price-below-site-price) — 422, **Price is below the site price**. The price of an item is below the current price of the product on the site. `pointer` names the item. When: `order/create` with `price` in an item. Fix: Leave `price` out (or pass `0`) to use the site price, or pass a price not lower than the current one from `stock/list`.\n- [`/api/problems/pick-up-point-required`](/api/problems/pick-up-point-required) — 422, **Pick-up point required**. The delivery method delivers to pick-up points, but `pick_up_point_id` is missing and no point was chosen automatically. When: `order/create`; `customer-order/create` when a package of the checkout has a pick-up method without a chosen point. Fix: Pass `pick_up_point_id` from `delivery/pick-up-point/list` for this delivery method; on the customer path — from `customer-cart/pick-up-point/list` to `customer-cart/checkout/update`.\n- [`/api/problems/external-id-conflict`](/api/problems/external-id-conflict) — 409, **Order with this external id differs**. An order with this `external_id` already exists and differs from the request (items, delivery method, pick-up point or currency). A repeat with the same body returns the existing order with `replayed`. When: `order/create` with `external_id`. Fix: A new order needs a new `external_id`. The existing order: `order/show` with the id from `detail`.\n- [`/api/problems/delivery-unavailable`](/api/problems/delivery-unavailable) — 422, **Delivery method cannot deliver**. The delivery method cannot carry this order or product: the parcel is heavier than the tariff allows, the method does not deliver to the country, or it does not ship from the warehouse of an item. `pointer` names the value to change. When: `order/create`, `order/pay` (the tariff is checked again at payment), `delivery/calculate`, `customer-cart/item/create`. Fix: Choose another method from `delivery/calculate` for the same items and country, or split the order. An order that cannot be paid: cancel it with `order/cancel` and place it again with another method. Nothing was charged.\n- [`/api/problems/country-not-delivered`](/api/problems/country-not-delivered) — 422, **Site does not deliver to the country**. The country of the request is not among the delivery countries of the site. `pointer` names the field with the country. When: `delivery/calculate`, `order/create`, `dictionary/city/search`. Fix: Take a country from `dictionary/country/list`.\n- [`/api/problems/variation-unavailable`](/api/problems/variation-unavailable) — 422, **Product variation is not sold on the site**. The product variation does not exist or has no offer of a supplier of the site, so it cannot be priced, delivered or ordered. `pointer` names the item. When: `delivery/calculate`, `delivery/pick-up-point/list` with items, `order/create`. Fix: Remove the item or take product variation ids from `stock/product/show` or `stock/list`.\n- [`/api/problems/delivery-method-not-on-site`](/api/problems/delivery-method-not-on-site) — 422, **Delivery method is not enabled on the site**. The delivery method exists but is not enabled on the site: the site has no tariff for it. `pointer` — `delivery_method_id`. When: `delivery/pick-up-point/list`, `order/create`. Fix: Take `delivery_method_id` from `dictionary/delivery-method/list` or `delivery/calculate`.\n- [`/api/problems/pick-up-not-supported`](/api/problems/pick-up-not-supported) — 422, **Delivery method has no pick-up points**. The delivery method delivers to the door, while the request is about pick-up points. `pointer` names the field to change. When: `delivery/pick-up-point/list` with a door delivery method, `order/create` with `pick_up_point_id` and a door delivery method. Fix: For pick-up points take a method with `with_pick_up_points: true` (`type: pick_up_point` in `delivery/calculate`); with a door method leave `pick_up_point_id` out.\n- [`/api/problems/rubric-not-in-tree`](/api/problems/rubric-not-in-tree) — 422, **Rubric is not in the tree**. The rubric is not a rubric of the tree the operation works with (the site tree, or the tree of the source store of `store_id`): it belongs to another tree, or it does not exist. `pointer` names the rubric in the body. When: `product/rubric/link`, `product/rubric/unlink`, `product/primary-rubric/update`; `rubric_id` of `stock/product/search`, `stock/facet/list`, `stock/product/id/list`, `rubric/aspect/list`, `rubric/brand/show`, `rubric/brand/update`; `parent_id` of `rubric/create`, `rubric/move`, `rubric/list`, `rubric/search`; `parent_id` of `source/store-rubric/list` and `rubric_id` of `stock/product/id/list` with `store_id` — the tree of the source store. Fix: Take rubric ids from `rubric/list` or `rubric/search`, rubrics of a source store — from `source/store-rubric/list` with the same `store_id`.\n- [`/api/problems/rubric-inactive`](/api/problems/rubric-inactive) — 422, **Rubric is inactive**. The rubric of the site tree is inactive, and the operation needs an active one: an inactive rubric is not shown on the storefront. When: `product/primary-rubric/update`: the main rubric must be shown on the storefront. `product/rubric/link` accepts an inactive rubric. Fix: Activate the rubric with `rubric/activate`, or choose an active one from `rubric/list`.\n- [`/api/problems/rubric-in-use`](/api/problems/rubric-in-use) — 409, **Rubric is in use**. The rubric is used by settings of the platform that are not deleted together with it (banners, brand and supplier lists of the rubric, filters, source store links, exports): deleting it would break them. `detail` lists what uses the rubric. When: `rubric/delete`. Fix: Turn the rubric off with `rubric/deactivate` instead: it disappears from the storefront and keeps the settings. To delete it, ask the support to remove the listed settings first.\n- [`/api/problems/no-products-accepted`](/api/problems/no-products-accepted) — 422, **No product can be processed**. None of `product_ids` fits the operation: the products do not exist, or (for operations on products of the site) they are not in the site tree. Nothing was changed. When: `product/rubric/link` and `product/primary-rubric/update` — no product of `product_ids` exists; `product/rubric/unlink` — none is in the site tree. Fix: Take ids of products of the site from `stock/product/id/list`; products of a source store to add to the site — from `stock/product/id/list` with `store_id` and a rubric of `source/store-rubric/list`.\n- [`/api/problems/site-variation-unknown`](/api/problems/site-variation-unknown) — 422, **Unknown site variation**. The site has no variation with the code passed in `site_variation`. When: Any operation with `site_variation`: products, texts, aspects, dictionaries, the customer path. Fix: Take a code from `settings/site-variation/list`, or leave `site_variation` out for the default variation.\n- [`/api/problems/customer-token-required`](/api/problems/customer-token-required) — 403, **Customer token required**. The operation acts for a customer and opens only with the customer token in `X-Customer-Auth-Token`; the site token was passed instead. When: `customer-account/*`, `customer-cart/*`, `customer-order/*` called with `X-Auth-Token` and without `X-Customer-Auth-Token`. Fix: Sign the customer in with `customer-auth/sign-in` (with the site token) and pass the issued token in `X-Customer-Auth-Token`.\n- [`/api/problems/site-token-required`](/api/problems/site-token-required) — 403, **Site token required**. The operation acts for the site and opens only with the site token in `X-Auth-Token`; only a customer token was passed. When: Any operation except `customer-account/*`, `customer-cart/*`, `customer-order/*` and `dictionary/*` called with `X-Customer-Auth-Token` and without `X-Auth-Token`. Fix: Pass the site token in `X-Auth-Token`; a customer token sent with it does not disturb.\n- [`/api/problems/sign-in-locked`](/api/problems/sign-in-locked) — 429, **Sign-in temporarily locked**. Too many failed attempts to sign in with this email or phone (or to confirm the old password): signing in by it is locked for a while. The rate limit of operations is separate. When: `customer-auth/sign-in` by email, `customer-auth/confirm`, `customer-account/password/update` after 5 attempts without a success within 15 minutes for one email, phone or customer; sign-in by password and code — after 300 failures within 15 minutes through one site token. Fix: Wait `Retry-After` seconds. A customer who forgot the password resets it with `customer-auth/password/reset`.\n- [`/api/problems/code-not-sent`](/api/problems/code-not-sent) — 502, **Code not sent**. The request is valid, but the SMS gateway or the mail service failed to send the sign-in or sign-up code. The attempt still counts: the pause before the next code and the daily limit of the phone apply. When: `customer-auth/sign-in` by phone and `customer-auth/sign-up` when the SMS gateway or the mail service refuses or does not answer. Fix: Repeat the same request later — after the pause, a too early repeat gives 422; until then offer another way: sign-in by email and password instead of a phone code, or the other way round.\n- `about:blank` — any other status (for example 502): see `title` and `detail`.",
             "examples": [
               "/api/problems/not-found"
             ]

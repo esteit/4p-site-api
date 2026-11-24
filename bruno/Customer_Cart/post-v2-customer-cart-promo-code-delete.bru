@@ -1,7 +1,7 @@
 meta {
   name: Remove the promo code
   type: http
-  seq: 10
+  seq: 12
   tags: [
     Customer_Cart
   ]
@@ -26,5 +26,5 @@ assert {
 }
 
 docs {
-  Removes the applied promo code from the checkout; without a code nothing changes. Returns the recalculated checkout.
+  Removes the applied promo code from the checkout; without a code nothing changes. An empty cart gives 422, as `customer-cart/checkout/show`. Returns the recalculated checkout.
 }

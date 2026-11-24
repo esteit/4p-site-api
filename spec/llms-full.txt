@@ -7,7 +7,7 @@
 - **Responses.** A JSON envelope `{timestamp, error, data, meta}`; a field without a value is `null`. Money is a decimal string (`"65095.00"`), country codes are ISO 3166-1 alpha-2 (`RU`).
 - **Errors.** `application/problem+json` with a stable `type` to branch on, `detail` and `pointer` to the wrong value.
 - **Language.** The language of data (product names, characteristics, rubrics, countries, articles) is set by `site_variation` in the body: the code of a site variation from `settings/site-variation/list`, the default variation when omitted. `Accept-Language: en` or `ru` (English by default) sets only the language of error texts (`detail`).
-- **Limits.** 600 requests per minute (sliding window) for each group, counted per site: all tokens of the site share one counter; in customer groups — per customer. The state is in `meta.usage` and `X-RateLimit-*` headers; over the limit — 429 with `Retry-After`.
+- **Limits.** 600 requests per minute (sliding window) for each group: a server key — per site (all server keys of the site share one counter); an app key — per key and client IP; customer groups — per customer or guest. On top of it, per client IP of an app key: 10 sign-in codes, 20 new guests starting checkout and 10 guest orders an hour (all sites together). The state is in `meta.usage` and `X-RateLimit-*` headers; over the limit — 429 with `Retry-After`.
 - **For AI agents.** `/v2/llms.txt` — groups and operations one line each; `/v2/llms-full.txt` — every operation with its body fields, response fields and error types, in Markdown.
 
 Base URL: `https://api.4partners.io/v2`. Every operation is `POST` with a JSON body (`Content-Type: application/json`); an operation without parameters takes `{}`.
@@ -37,7 +37,7 @@ Body:
 - `param_ids` (array of integer, items ≤ 100, item ≥ 1): Aspect values (param ids): values of one aspect are combined with OR, different aspects with AND, as in `stock/product/search`. At most 10 different aspects: each selected aspect costs a separate count in the search index.
 - `price_from` (number or null, ≥ 0): Minimum price by the search index, in the primary currency of the site.
 - `price_to` (number or null, > 0): Maximum price by the search index, in the primary currency of the site; not less than `price_from`.
-- `in_stock` (boolean, default true): Only products in stock by the search index. The index lags behind live data: a product sold out after the last indexing still comes, with `available: false` — the storefront hides such a product itself, pages stay full and `meta.pager.total` stays honest. False — also products without stock, but only if the site shows them (`shows_out_of_stock_products` of `settings/info/show`); otherwise the same products as true.
+- `in_stock` (boolean, default true): Only products in stock by the search index. The index lags behind live data: a product sold out after the last indexing still comes, with `available: false` — the storefront hides such a product itself, the product is not dropped from its page. False — also products without stock, but only if the site shows them (`shows_out_of_stock_products` of `settings/info/show`); otherwise the same products as true.
 - `discount_only` (boolean, default false): Only discounted products.
 - `site_variation` (string or null, length ≤ 50): Site variation code (`settings/site-variation/list`): language of the names and the delivery country; the default variation if omitted.
 - `country` (string or null, length 2..2): Override of the delivery country of the variation, ISO 3166-1 alpha-2.
@@ -140,7 +140,8 @@ Response 200, `data` (array of objects):
 - `property_param_ids` (array of integer): Ids of property params shared by all variations, from `params`; the own properties of a variation are in its `property_param_ids`.
 - `variations` (array of object): Variations of the product on the site, the same set and prices as `stock/list`: only variations with images and at least one offer. Empty — the product cannot be sold now (`available: false`, `min_price` and usually `image` are `null`): keep it hidden on the storefront; it comes back when a variation gets an offer, or when the site opens it (`closed`).
 - `variations[].id` (integer): Product variation id. Its page on the site is `url` of the product with `#v<id>`.
-- `variations[].description` (string): Variation description, the source text.
+- `variations[].name` (string): Variation name in the language of `site_variation`: the name the site set (`product/variation/update`, as the storefront shows it), else the common translation, else the source name.
+- `variations[].description` (string): Variation description in the language of `site_variation`, as the storefront shows it: the description the site set, else the common translation, else the source text. HTML is not cleaned.
 - `variations[].price` (string or null): Current price of the site in `currency` of the product, decimal string with 2 digits after the point (`"1990.00"`); `null` — the site has no active offer for the variation in the country (`unavailable_reason` is `no_offer`). The price stays when only the stock is the problem.
 - `variations[].old_price` (string or null): Price before the discount in `currency` of the product; `null` when there is no discount (no old price, or it is not above `price`).
 - `variations[].quantity` (integer): Stock that can be ordered now; 0 when `available` is false.
@@ -199,7 +200,7 @@ Errors:
 
 `POST /v2/stock/product/search` · `stock_product_search` · token: site (`X-Auth-Token`)
 
-Products of the site found in the search index by text, rubric, brands, aspect values (`param_ids`: OR inside one aspect, AND between aspects), price, stock and discount, page by page (`meta.pager`), in the format of `stock/product/show`: prices and stock are current, not from the index. Every page is exactly the window of the index: a product the index has in stock but the live data does not comes with `available: false` instead of dropping out, so pages are full and their sum is `meta.pager.total`. A product closed for the site after the last indexing comes with `closed: true`; only a product unlinked from the site tree after the last indexing is left out, until the next indexing. The storefront hides a product with `available: false` itself; a product without `variations` cannot be sold now. With `sort` by price, products without a current price (`min_price: null`) go last on each page. A product added since the last indexing is not found yet: `stock/product/id/list` reads the database. Facets of the same selection (values with counts, brands, price range) — `stock/facet/list`. Pages go down to 10 000 products: to get all products use `stock/product/id/list` and `stock/product/batch-show`.
+Products of the site found in the search index by text, rubric, brands, aspect values (`param_ids`: OR inside one aspect, AND between aspects), price, stock and discount, page by page (`meta.pager`), in the format of `stock/product/show`: prices and stock are current, not from the index. Every page is the window of the index: a product the index has in stock but the live data does not comes with `available: false` instead of dropping out, and a product closed for the site after the last indexing comes with `closed: true`. Only a product unlinked from the site tree after the last indexing is left out, until the next indexing: then its page is one product shorter and `meta.pager.total`, the count of the index, is larger than the products you get. Stop at `meta.pager.pages`, not at a short page. The storefront hides a product with `available: false` itself; a product without `variations` cannot be sold now. With `sort` by price, products without a current price (`min_price: null`) go last on each page. A product added since the last indexing is not found yet: `stock/product/id/list` reads the database. Facets of the same selection (values with counts, brands, price range) — `stock/facet/list`. Pages go down to 10 000 products: a deeper page (`page` × `per_page` over 10 000) gives 422; to get all products use `stock/product/id/list` and `stock/product/batch-show`.
 
 Body:
 - `query` (string or null, length ≤ 200): Search text: name, brand, article. Spaces at the edges are ignored; an empty text or only spaces — no text filter.
@@ -209,7 +210,7 @@ Body:
 - `param_ids` (array of integer, items ≤ 100, item ≥ 1): Aspect values (param ids from `stock/facet/list`): values of one aspect are combined with OR, different aspects with AND — `[red, blue, XL]` finds red or blue products of size XL. With `rubric_id`, only values of the filter aspects of the rubric (`rubric/aspect/list`) are accepted, if the rubric has them.
 - `price_from` (number or null, ≥ 0): Minimum price by the search index, in the primary currency of the site (`price` of `stock/facet/list`).
 - `price_to` (number or null, > 0): Maximum price by the search index, in the primary currency of the site; not less than `price_from`.
-- `in_stock` (boolean, default true): Only products in stock by the search index. The index lags behind live data: a product sold out after the last indexing still comes, with `available: false` — the storefront hides such a product itself, pages stay full and `meta.pager.total` stays honest. False — also products without stock, but only if the site shows them (`shows_out_of_stock_products` of `settings/info/show`); otherwise the same products as true.
+- `in_stock` (boolean, default true): Only products in stock by the search index. The index lags behind live data: a product sold out after the last indexing still comes, with `available: false` — the storefront hides such a product itself, the product is not dropped from its page. False — also products without stock, but only if the site shows them (`shows_out_of_stock_products` of `settings/info/show`); otherwise the same products as true.
 - `discount_only` (boolean, default false): Only discounted products.
 - `sort` (string: `relevance` | `popular` | `price_asc` | `price_desc` | `discount` | `new`, default `relevance`): Order of the results.
 - `site_variation` (string or null, length ≤ 50): Site variation code (`settings/site-variation/list`): language, country and currency of prices and stock; the default variation if omitted.
@@ -237,7 +238,8 @@ Response 200, `data` (array of objects):
 - `property_param_ids` (array of integer): Ids of property params shared by all variations, from `params`; the own properties of a variation are in its `property_param_ids`.
 - `variations` (array of object): Variations of the product on the site, the same set and prices as `stock/list`: only variations with images and at least one offer. Empty — the product cannot be sold now (`available: false`, `min_price` and usually `image` are `null`): keep it hidden on the storefront; it comes back when a variation gets an offer, or when the site opens it (`closed`).
 - `variations[].id` (integer): Product variation id. Its page on the site is `url` of the product with `#v<id>`.
-- `variations[].description` (string): Variation description, the source text.
+- `variations[].name` (string): Variation name in the language of `site_variation`: the name the site set (`product/variation/update`, as the storefront shows it), else the common translation, else the source name.
+- `variations[].description` (string): Variation description in the language of `site_variation`, as the storefront shows it: the description the site set, else the common translation, else the source text. HTML is not cleaned.
 - `variations[].price` (string or null): Current price of the site in `currency` of the product, decimal string with 2 digits after the point (`"1990.00"`); `null` — the site has no active offer for the variation in the country (`unavailable_reason` is `no_offer`). The price stays when only the stock is the problem.
 - `variations[].old_price` (string or null): Price before the discount in `currency` of the product; `null` when there is no discount (no old price, or it is not above `price`).
 - `variations[].quantity` (integer): Stock that can be ordered now; 0 when `available` is false.
@@ -277,6 +279,7 @@ A product card of the site: name and description in the language of `site_variat
 Body:
 - `product_id` (integer or null, 1..2147483647): Product id; or pass `url` instead.
 - `url` (string or null, length ≤ 2000): Storefront address or slug of the product instead of `product_id` (an app deep link): `https://shop.example/product/nike-air-a123#v456`, `/product/nike-air-a123` or `nike-air-a123` — the product id is the number after `-a` at the end of the path, any case.
+- `product_variation_id` (integer or null, 1..2147483647): A variation of the product (`content/link/resolve`, `#v<id>` of a link): with it `product_id` and `url` may be left out. A variation of another product gives 404. The card is the same, with all variations: select this one.
 - `site_variation` (string or null, length ≤ 50): Site variation code (`settings/site-variation/list`): language, country and currency of prices and stock, language of names and the storefront of `url`; `null` or omitted — the default variation.
 - `country` (string or null, length 2..2): Override of the delivery country of the variation, ISO 3166-1 alpha-2 (`dictionary/country/list`): prices and stock for this country in its primary currency on the site; `null` or omitted — the country of the variation.
 
@@ -300,7 +303,8 @@ Response 200, `data`:
 - `property_param_ids` (array of integer): Ids of property params shared by all variations, from `params`; the own properties of a variation are in its `property_param_ids`.
 - `variations` (array of object): Variations of the product on the site, the same set and prices as `stock/list`: only variations with images and at least one offer. Empty — the product cannot be sold now (`available: false`, `min_price` and usually `image` are `null`): keep it hidden on the storefront; it comes back when a variation gets an offer, or when the site opens it (`closed`).
 - `variations[].id` (integer): Product variation id. Its page on the site is `url` of the product with `#v<id>`.
-- `variations[].description` (string): Variation description, the source text.
+- `variations[].name` (string): Variation name in the language of `site_variation`: the name the site set (`product/variation/update`, as the storefront shows it), else the common translation, else the source name.
+- `variations[].description` (string): Variation description in the language of `site_variation`, as the storefront shows it: the description the site set, else the common translation, else the source text. HTML is not cleaned.
 - `variations[].price` (string or null): Current price of the site in `currency` of the product, decimal string with 2 digits after the point (`"1990.00"`); `null` — the site has no active offer for the variation in the country (`unavailable_reason` is `no_offer`). The price stays when only the stock is the problem.
 - `variations[].old_price` (string or null): Price before the discount in `currency` of the product; `null` when there is no discount (no old price, or it is not above `price`).
 - `variations[].quantity` (integer): Stock that can be ordered now; 0 when `available` is false.
@@ -364,7 +368,8 @@ Response 200, `data`:
 - `products[].property_param_ids` (array of integer): Ids of property params shared by all variations, from `params`; the own properties of a variation are in its `property_param_ids`.
 - `products[].variations` (array of object): Variations of the product on the site, the same set and prices as `stock/list`: only variations with images and at least one offer. Empty — the product cannot be sold now (`available: false`, `min_price` and usually `image` are `null`): keep it hidden on the storefront; it comes back when a variation gets an offer, or when the site opens it (`closed`).
 - `products[].variations[].id` (integer): Product variation id. Its page on the site is `url` of the product with `#v<id>`.
-- `products[].variations[].description` (string): Variation description, the source text.
+- `products[].variations[].name` (string): Variation name in the language of `site_variation`: the name the site set (`product/variation/update`, as the storefront shows it), else the common translation, else the source name.
+- `products[].variations[].description` (string): Variation description in the language of `site_variation`, as the storefront shows it: the description the site set, else the common translation, else the source text. HTML is not cleaned.
 - `products[].variations[].price` (string or null): Current price of the site in `currency` of the product, decimal string with 2 digits after the point (`"1990.00"`); `null` — the site has no active offer for the variation in the country (`unavailable_reason` is `no_offer`). The price stays when only the stock is the problem.
 - `products[].variations[].old_price` (string or null): Price before the discount in `currency` of the product; `null` when there is no discount (no old price, or it is not above `price`).
 - `products[].variations[].quantity` (integer): Stock that can be ordered now; 0 when `available` is false.
@@ -433,7 +438,8 @@ Response 200, `data` (array of objects):
 - `property_param_ids` (array of integer): Ids of property params shared by all variations, from `params`; the own properties of a variation are in its `property_param_ids`.
 - `variations` (array of object): Variations of the product on the site, the same set and prices as `stock/list`: only variations with images and at least one offer. Empty — the product cannot be sold now (`available: false`, `min_price` and usually `image` are `null`): keep it hidden on the storefront; it comes back when a variation gets an offer, or when the site opens it (`closed`).
 - `variations[].id` (integer): Product variation id. Its page on the site is `url` of the product with `#v<id>`.
-- `variations[].description` (string): Variation description, the source text.
+- `variations[].name` (string): Variation name in the language of `site_variation`: the name the site set (`product/variation/update`, as the storefront shows it), else the common translation, else the source name.
+- `variations[].description` (string): Variation description in the language of `site_variation`, as the storefront shows it: the description the site set, else the common translation, else the source text. HTML is not cleaned.
 - `variations[].price` (string or null): Current price of the site in `currency` of the product, decimal string with 2 digits after the point (`"1990.00"`); `null` — the site has no active offer for the variation in the country (`unavailable_reason` is `no_offer`). The price stays when only the stock is the problem.
 - `variations[].old_price` (string or null): Price before the discount in `currency` of the product; `null` when there is no discount (no old price, or it is not above `price`).
 - `variations[].quantity` (integer): Stock that can be ordered now; 0 when `available` is false.
@@ -1783,8 +1789,8 @@ Response 200, `data`:
 - `html` (string or null): HTML of the document, output on the storefront as is, without sanitizing; for a Markdown article — built from `markdown`. `null` in `content/article/list` (the list has no document) and when the document has no HTML.
 - `styles` (string or null): CSS of the document; `null` in `content/article/list` and when not set.
 - `scripts` (string or null): JavaScript of the document, run on the storefront as is; `null` in `content/article/list` and when not set.
-- `settings` (object or null): Page settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
-- `context` (object or null): Block settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
+- `settings` (object or null)
+- `context` (object or null)
 - `markdown` (string or null): Markdown: the source of a Markdown article or the text version of an HTML article (served at `markdown_url`); `null` in `content/article/list` and when there is none.
 - `markdown_url` (string or null): URL of the Markdown version on the site; `null` — the article has no Markdown.
 - `meta_title` (string or null): Meta title; `null` — not set.
@@ -1818,8 +1824,8 @@ Body:
 - `markdown` (string or null): Markdown: the source of a Markdown article (`doc_type` `markdown`, required), or an optional text version of an HTML article served at `markdown_url`.
 - `styles` (string or null): CSS of the document (`doc_type` `html`).
 - `scripts` (string or null): JavaScript of the document (`doc_type` `html`), run on the storefront as is.
-- `settings` (object or null): Page settings of the document (`doc_type` `html`), a JSON object.
-- `context` (object or null): Block settings of the document (`doc_type` `html`), a JSON object.
+- `settings` (object or null)
+- `context` (object or null)
 - `publish_date` (string or null, pattern `^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?Z?(?:[+-]\d{2}:\d{2})?)$`): Publication date, ISO 8601: `2026-11-05T10:00:00+03:00`, `2026-11-05T07:00:00Z`; seconds and fractions are optional (`2026-11-05T10:00`), without an offset — the platform time zone (Europe/Moscow). Stored in the platform time zone: the response gives the same moment with `+03:00`. Omitted — not set.
 - `slug` (string or null, length ≤ 255, pattern `^([a-z0-9]+(?:-[a-z0-9]+)*)$`): URL slug, unique in the site; omitted or empty — made from `name`, a taken one gets a suffix (`-two`). A taken slug passed explicitly gives 422.
 - `active` (boolean or null): Shown in the lists and menus of the site; omitted — `true`: the article is published at once.
@@ -1850,8 +1856,8 @@ Response 201, `data`:
 - `html` (string or null): HTML of the document, output on the storefront as is, without sanitizing; for a Markdown article — built from `markdown`. `null` in `content/article/list` (the list has no document) and when the document has no HTML.
 - `styles` (string or null): CSS of the document; `null` in `content/article/list` and when not set.
 - `scripts` (string or null): JavaScript of the document, run on the storefront as is; `null` in `content/article/list` and when not set.
-- `settings` (object or null): Page settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
-- `context` (object or null): Block settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
+- `settings` (object or null)
+- `context` (object or null)
 - `markdown` (string or null): Markdown: the source of a Markdown article or the text version of an HTML article (served at `markdown_url`); `null` in `content/article/list` and when there is none.
 - `markdown_url` (string or null): URL of the Markdown version on the site; `null` — the article has no Markdown.
 - `meta_title` (string or null): Meta title; `null` — not set.
@@ -1898,8 +1904,8 @@ Response 200, `data`:
 - `html` (string or null): HTML of the document, output on the storefront as is, without sanitizing; for a Markdown article — built from `markdown`. `null` in `content/article/list` (the list has no document) and when the document has no HTML.
 - `styles` (string or null): CSS of the document; `null` in `content/article/list` and when not set.
 - `scripts` (string or null): JavaScript of the document, run on the storefront as is; `null` in `content/article/list` and when not set.
-- `settings` (object or null): Page settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
-- `context` (object or null): Block settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
+- `settings` (object or null)
+- `context` (object or null)
 - `markdown` (string or null): Markdown: the source of a Markdown article or the text version of an HTML article (served at `markdown_url`); `null` in `content/article/list` and when there is none.
 - `markdown_url` (string or null): URL of the Markdown version on the site; `null` — the article has no Markdown.
 - `meta_title` (string or null): Meta title; `null` — not set.
@@ -1978,8 +1984,8 @@ Response 200, `data` (array of objects):
 - `html` (string or null): HTML of the document, output on the storefront as is, without sanitizing; for a Markdown article — built from `markdown`. `null` in `content/article/list` (the list has no document) and when the document has no HTML.
 - `styles` (string or null): CSS of the document; `null` in `content/article/list` and when not set.
 - `scripts` (string or null): JavaScript of the document, run on the storefront as is; `null` in `content/article/list` and when not set.
-- `settings` (object or null): Page settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
-- `context` (object or null): Block settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
+- `settings` (object or null)
+- `context` (object or null)
 - `markdown` (string or null): Markdown: the source of a Markdown article or the text version of an HTML article (served at `markdown_url`); `null` in `content/article/list` and when there is none.
 - `markdown_url` (string or null): URL of the Markdown version on the site; `null` — the article has no Markdown.
 - `meta_title` (string or null): Meta title; `null` — not set.
@@ -2026,8 +2032,8 @@ Response 200, `data`:
 - `html` (string or null): HTML of the document, output on the storefront as is, without sanitizing; for a Markdown article — built from `markdown`. `null` in `content/article/list` (the list has no document) and when the document has no HTML.
 - `styles` (string or null): CSS of the document; `null` in `content/article/list` and when not set.
 - `scripts` (string or null): JavaScript of the document, run on the storefront as is; `null` in `content/article/list` and when not set.
-- `settings` (object or null): Page settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
-- `context` (object or null): Block settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
+- `settings` (object or null)
+- `context` (object or null)
 - `markdown` (string or null): Markdown: the source of a Markdown article or the text version of an HTML article (served at `markdown_url`); `null` in `content/article/list` and when there is none.
 - `markdown_url` (string or null): URL of the Markdown version on the site; `null` — the article has no Markdown.
 - `meta_title` (string or null): Meta title; `null` — not set.
@@ -2062,8 +2068,8 @@ Body:
 - `markdown` (string or null): Markdown: the source of a Markdown article (the HTML and `tags_relink_auto` are rebuilt from it), or the text version of an HTML article (served at `markdown_url`); empty string removes the text version.
 - `styles` (string or null): CSS of the document of an HTML article.
 - `scripts` (string or null): JavaScript of the document of an HTML article, run on the storefront as is.
-- `settings` (object or null): Page settings of the document of an HTML article, a JSON object (replaced as a whole).
-- `context` (object or null): Block settings of the document of an HTML article, a JSON object (replaced as a whole).
+- `settings` (object or null)
+- `context` (object or null)
 - `publish_date` (string or null, pattern `^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?Z?(?:[+-]\d{2}:\d{2})?)$`): Publication date, ISO 8601: `2026-11-05T10:00:00+03:00`, `2026-11-05T07:00:00Z`; seconds and fractions are optional (`2026-11-05T10:00`), without an offset — the platform time zone (Europe/Moscow). Stored in the platform time zone: the response gives the same moment with `+03:00`.
 - `slug` (string or null, length ≤ 255, pattern `^([a-z0-9]+(?:-[a-z0-9]+)*)$`): URL slug, unique in the site; empty string — made from the title. A slug of another article gives 422.
 - `active` (boolean or null): Shown in the lists and menus of the site; `false` hides it there, the page stays available by its direct URL.
@@ -2094,8 +2100,8 @@ Response 200, `data`:
 - `html` (string or null): HTML of the document, output on the storefront as is, without sanitizing; for a Markdown article — built from `markdown`. `null` in `content/article/list` (the list has no document) and when the document has no HTML.
 - `styles` (string or null): CSS of the document; `null` in `content/article/list` and when not set.
 - `scripts` (string or null): JavaScript of the document, run on the storefront as is; `null` in `content/article/list` and when not set.
-- `settings` (object or null): Page settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
-- `context` (object or null): Block settings of the document, a JSON object (an empty object nested in it comes back as `[]`); `null` in `content/article/list` and when not set.
+- `settings` (object or null)
+- `context` (object or null)
 - `markdown` (string or null): Markdown: the source of a Markdown article or the text version of an HTML article (served at `markdown_url`); `null` in `content/article/list` and when there is none.
 - `markdown_url` (string or null): URL of the Markdown version on the site; `null` — the article has no Markdown.
 - `meta_title` (string or null): Meta title; `null` — not set.
@@ -2136,7 +2142,7 @@ Response 200, `data`:
 - `blocks[].title` (string or null): Title: the header above a product slider in the article.
 - `blocks[].banners` (array of object): Banners of a `banner_carousel`, enabled only.
 - `blocks[].banners[].name` (string or null): Banner name from the editor.
-- `blocks[].banners[].link` (string or null): Where the banner leads, as set in the editor: a storefront address (open it with `stock/product/show` `url`, `brand/show` `slug` or a search) or an external link.
+- `blocks[].banners[].link` (string or null): Where the banner leads, as set in the editor: a storefront address or an external link: pass it to `content/link/resolve` to know which screen to open.
 - `blocks[].banners[].mobile_image` (object): Picture for a phone.
 - `blocks[].banners[].desktop_image` (object): Picture for a desktop.
 - `blocks[].products` (array of object): Products of a `product_slider` in the format of `stock/product/show`.
@@ -2181,7 +2187,7 @@ Body:
 - `html` (string or null): HTML with block placeholders `<template data-block-id="N">`; a layout needs `{{ content }}` — the page is inserted there (without it — 422). Output on the storefront as is, without sanitizing.
 - `styles` (string or null): CSS.
 - `scripts` (string or null): JavaScript.
-- `context` (object or null): Settings and bindings of the blocks, a JSON object: `{"blocks": {"N": {"props": …, "binding": …}}}`.
+- `context` (object or null)
 - `active` (boolean or null): Active: an inactive template is skipped on the storefront; omitted — `true`.
 
 Response 201, `data`:
@@ -2193,7 +2199,7 @@ Response 201, `data`:
 - `html` (string or null): HTML with block placeholders `<template data-block-id="N">`; a layout has `{{ content }}`.
 - `styles` (string or null): CSS.
 - `scripts` (string or null): JavaScript.
-- `context` (object or null): Settings and bindings of the blocks, a JSON object: `{"blocks": {"N": {"props": …, "binding": …}}}` (an empty object nested in it comes back as `[]`); `null` — not set.
+- `context` (object or null)
 - `created_at` (string): Created at.
 - `modified_at` (string or null): Modified at.
 
@@ -2270,7 +2276,7 @@ Response 200, `data`:
 - `html` (string or null): HTML with block placeholders `<template data-block-id="N">`; a layout has `{{ content }}`.
 - `styles` (string or null): CSS.
 - `scripts` (string or null): JavaScript.
-- `context` (object or null): Settings and bindings of the blocks, a JSON object: `{"blocks": {"N": {"props": …, "binding": …}}}` (an empty object nested in it comes back as `[]`); `null` — not set.
+- `context` (object or null)
 - `created_at` (string): Created at.
 - `modified_at` (string or null): Modified at.
 
@@ -2295,7 +2301,7 @@ Body:
 - `html` (string or null): HTML with block placeholders `<template data-block-id="N">`; a layout needs `{{ content }}` — the page is inserted there (without it — 422). Output on the storefront as is, without sanitizing.
 - `styles` (string or null): CSS.
 - `scripts` (string or null): JavaScript.
-- `context` (object or null): Settings and bindings of the blocks, a JSON object: `{"blocks": {"N": {"props": …, "binding": …}}}`.
+- `context` (object or null)
 - `active` (boolean or null): Active: an inactive template is skipped on the storefront; omitted or `null` — unchanged.
 
 Response 200, `data`:
@@ -2307,7 +2313,7 @@ Response 200, `data`:
 - `html` (string or null): HTML with block placeholders `<template data-block-id="N">`; a layout has `{{ content }}`.
 - `styles` (string or null): CSS.
 - `scripts` (string or null): JavaScript.
-- `context` (object or null): Settings and bindings of the blocks, a JSON object: `{"blocks": {"N": {"props": …, "binding": …}}}` (an empty object nested in it comes back as `[]`); `null` — not set.
+- `context` (object or null)
 - `created_at` (string): Created at.
 - `modified_at` (string or null): Modified at.
 
@@ -2318,6 +2324,40 @@ Errors:
 - 404: `/api/problems/not-found`
 - 409: `/api/problems/conflict`
 - 422: `/api/problems/validation-error`, `/api/problems/business-rule`
+- 429: `/api/problems/too-many-requests`
+
+### Resolve a storefront link
+
+`POST /v2/content/link/resolve` · `content_link_resolve` · token: site (`X-Auth-Token`)
+
+Turns a link of the site — `link` of banners, `products_url` of blocks, `url` of products, rubrics, brands and articles, a link inside an article — into the screen of an app: `product` (open `stock/product/show` with `product_id` and `product_variation_id`), `products` (call `stock/product/search` with the fields of `search`: rubric, brands, aspect values, price, stock, sale and sort of the storefront page), `article` (`content/article/show` with `article_id`), `home`, `page` (a page of the site the API has no screen for — the cart, collections, service pages, an unknown rubric, brand or article: open `url` in a browser) and `external` (another site: open `url` in a browser). Absolute links and paths are accepted, links of variation folders and subdomains of the site too: then `site_variation` is the code of that variation, pass it as `site_variation` to the next request. Storefront filters `stock/product/search` does not have are left out.
+
+Body:
+- `url` (string, length ≤ 2000, default ``): A link of the storefront as it came: absolute (`https://shop.example.com/r-shoes/cheap`) or a path (`/a-delivery`), from `link` of banners, `products_url` of blocks, `url` of products, rubrics, brands and articles, or an article text.
+
+Response 200, `data`:
+- `type` (string: `product` | `products` | `article` | `home` | `page` | `external`): The screen: `product`, `products`, `article`, `home`, `page` or `external`.
+- `url` (string): The link as an absolute URL: open it in a browser for `page` and `external`.
+- `product_id` (integer or null): Product of a `product` link.
+- `product_variation_id` (integer or null): Variation of a `product` link that names one (`#v<id>`, `/p-<id>`); `null` — the product card chooses.
+- `article_id` (integer or null): Article of an `article` link.
+- `search` (object): Body of `stock/product/search` for a `products` link: rubric, brands, filters and sort of the storefront page.
+- `search.query` (string or null): Search text of a search link.
+- `search.rubric_id` (integer or null): Rubric of the site tree.
+- `search.brand_ids` (array of integer): Brands, e.g. a brand page or a brand in a rubric.
+- `search.param_ids` (array of integer): Aspect values of the filter.
+- `search.price_from` (number or null): Price from.
+- `search.price_to` (number or null): Price to.
+- `search.in_stock` (boolean): Only products in stock.
+- `search.discount_only` (boolean): Only discounted products: a sale link.
+- `search.sort` (string): Sort of the storefront link: `popular`, `new`, `price_asc`, `price_desc`, `discount`; `relevance` when the link has none.
+- `site_variation` (string or null): Site variation of the link (its folder or subdomain): pass it as `site_variation` to the next request; `null` — the link has none, keep the variation of the app.
+
+Errors:
+- 400: `/api/problems/bad-request`
+- 401: `/api/problems/unauthorized`
+- 403: `/api/problems/site-token-required`, `/api/problems/forbidden`
+- 422: `/api/problems/validation-error`
 - 429: `/api/problems/too-many-requests`
 
 ### List article tags
@@ -2352,7 +2392,7 @@ Settings (variables), variations, information and themes of the site.
 
 `POST /v2/settings/info/show` · `settings_info_show` · token: site (`X-Auth-Token`)
 
-The site of the token: domain, email, until when the subscription of the site owner is paid (`order/create` needs it), rules of AI texts, names and phones by site variation (`site_variations`), whether the storefront shows products without stock (`shows_out_of_stock_products`).
+The site of the token: domain, email, until when the subscription of the site owner is paid (informational: Site API orders do not check it), rules of AI texts, names and phones by site variation (`site_variations`), whether the storefront shows products without stock (`shows_out_of_stock_products`).
 
 Body:
 - none, send `{}`
@@ -2564,7 +2604,7 @@ Errors:
 
 `POST /v2/settings/variable/icon/list` · `settings_variable_icon_list` · token: site (`X-Auth-Token`)
 
-Icons that `icon_name` of settings and rubrics refers to, with SVG in six styles. An `icon_name` not in the list is a name of the icon package of the admin panel.
+Icons that `icon_name` of settings and rubrics refers to, with SVG in six styles. An `icon_name` not in the list has no SVG in the API: show an icon of your own for it.
 
 Body:
 - none, send `{}`
@@ -2603,7 +2643,7 @@ Body:
 
 Response 200, `data` (array of objects):
 - `code` (string): Variable code.
-- `type` (string): Value type: `string`, `text`, `textarea`, `switch`, `select`, `twig`, `file`, …
+- `type` (string): Value type: `text`, `textarea`, `text_markdown`, `select`, `switch`, `twig`, `file`, `product_card_config`, `product_carousel_presets`, `mini_card_presets`; older settings may have `string`. `value` comes as a string; structured types are a JSON string, save them back as the same string. Treat an unknown type as text.
 - `scope` (string): `global` — one value for the site, `variation` — a value per site variation.
 - `nullable` (boolean): An empty value is allowed.
 - `readonly` (boolean): Read-only for the partner: `settings/variable/save` and `reset` give 422.
@@ -2695,12 +2735,12 @@ Errors:
 
 `POST /v2/settings/variable/save` · `settings_variable_save` · token: site (`X-Auth-Token`)
 
-Saves values of settings in a site variation as one batch: all or none. A hidden setting gives 404, a read-only one or a value that does not pass the check — 422 with `pointer` to the item; a numeric setting takes only a number (`15`, `12.5`). A mask of a secret is skipped (`skipped: true`). A theme of the storefront is chosen with `default_theme` (`{"themeId": <id of settings/theme/list>}`).
+Saves values of settings in a site variation as one batch: all or none. A hidden setting gives 404, a read-only one or a value that does not pass the check — 422 with `pointer` to the item; `value` is stored as a string whatever its JSON type: `15` and `"15"` are the same, a boolean is stored as `true`/`false`, so a value read from `settings/variable/list` can be saved back as is. A mask of a secret is skipped (`skipped: true`). A theme of the storefront is chosen with `default_theme`: its `value` is a JSON string, e.g. `"{\"themeId\": 5}"` with the id from `settings/theme/list` (`themeId` inside the string keeps its case), and reads back as the same string.
 
 Body:
 - `variables` (array of object, items 1..200): Values to save.
 - `variables[].code` (string, required, pattern `^([a-z0-9_]+)$`): Variable code.
-- `variables[].value` (any): Value; null or empty — empty value (allowed for a nullable variable). A file — a base64 data URL.
+- `variables[].value` (any): Value; null or empty — empty value (allowed for a nullable variable). A file — a base64 data URL. Stored as a string: a number and the same number in a string are equal, a boolean becomes `true`/`false`, a structured setting is a JSON string.
 - `site_variation` (string, required, length ≤ 50): Site variation of `variation` variables; `default` — the variation without a code.
 
 Response 200, `data` (array of objects):
@@ -2731,7 +2771,7 @@ Body:
 
 Response 200, `data`:
 - `code` (string): Variable code.
-- `type` (string): Value type: `string`, `text`, `textarea`, `switch`, `select`, `twig`, `file`, …
+- `type` (string): Value type: `text`, `textarea`, `text_markdown`, `select`, `switch`, `twig`, `file`, `product_card_config`, `product_carousel_presets`, `mini_card_presets`; older settings may have `string`. `value` comes as a string; structured types are a JSON string, save them back as the same string. Treat an unknown type as text.
 - `scope` (string): `global` — one value for the site, `variation` — a value per site variation.
 - `nullable` (boolean): An empty value is allowed.
 - `readonly` (boolean): Read-only for the partner: `settings/variable/save` and `reset` give 422.
@@ -2807,6 +2847,34 @@ Errors:
 
 Reference data of the site: delivery countries, delivery methods, settlements.
 
+### Suggest addresses
+
+`POST /v2/dictionary/address/suggest` · `dictionary_address_suggest` · token: site (`X-Auth-Token`) or customer (`X-Customer-Auth-Token`)
+
+Addresses for what the customer typed, in the fields of `customer-account/address/create`: in Russia with `city_id` (KLADR of the settlement), elsewhere with `city_name`. Russia, Belarus, Kazakhstan and Uzbekistan get full addresses down to the house and flat; other countries get mostly settlements and streets. `country` must be one the site delivers to (`dictionary/country/list`), else 422 `country-not-delivered`. If the suggestion service fails, the list is empty: let the customer type the address.
+
+Body:
+- `query` (string, length 3..255, default ``): What the customer typed: a city, street and house in any order, e.g. `Москва Тверская 1`; at least 3 characters.
+- `country` (string or null): Country of the address, ISO 3166-1 alpha-2, one of `dictionary/country/list`; by default the main country of the site.
+- `count` (integer, 1..20, default 10): How many suggestions to return, 1–20.
+
+Response 200, `data` (array of objects):
+- `value` (string): The address as one line, to show in the list.
+- `country` (string): ISO 3166-1 alpha-2 country code in upper case: pass it as `address.country`.
+- `region` (string or null): Region, e.g. `Московская обл`.
+- `city_id` (string or null): Settlement KLADR id, Russia only: pass it as `address.city_id`; `null` outside Russia or when the suggestion has no settlement.
+- `city_name` (string or null): City or settlement name: pass it as `address.city_name` when there is no `city_id`.
+- `street` (string or null): Street with its type, e.g. `ул Тверская`: `address.street`.
+- `house` (string or null): House: `address.house`.
+- `flat` (string or null): Flat: `address.flat`.
+- `zip` (string or null): Postal code: `address.zip`.
+
+Errors:
+- 400: `/api/problems/bad-request`
+- 401: `/api/problems/unauthorized`
+- 422: `/api/problems/validation-error`, `/api/problems/country-not-delivered`
+- 429: `/api/problems/too-many-requests`
+
 ### Search settlements
 
 `POST /v2/dictionary/city/search` · `dictionary_city_search` · token: site (`X-Auth-Token`) or customer (`X-Customer-Auth-Token`)
@@ -2829,6 +2897,28 @@ Errors:
 - 400: `/api/problems/bad-request`
 - 401: `/api/problems/unauthorized`
 - 422: `/api/problems/validation-error`, `/api/problems/country-not-delivered`
+- 429: `/api/problems/too-many-requests`
+
+### Detect the country of the customer
+
+`POST /v2/dictionary/country/detect` · `dictionary_country_detect` · token: site (`X-Auth-Token`) or customer (`X-Customer-Auth-Token`)
+
+The country to preselect in an app: by `latitude` and `longitude` of the device, else by the IP of the device — only with an app key or a customer or guest token received with it, since with a server key the IP is your server — else the main country of the site. Only a country the site delivers to is returned; a found country the site does not deliver to is skipped, and if the main country of the site is not among them, the first delivery country comes; a site without delivery countries gives its main country. `source` tells which way gave it. Pass `code` as `country` to delivery and order methods.
+
+Body:
+- `latitude` (number or null, -90..90): Latitude of the device, from −90 to 90; pass it with `longitude`.
+- `longitude` (number or null, -180..180): Longitude of the device, from −180 to 180; pass it with `latitude`.
+- `site_variation` (string or null, length ≤ 50): Site variation code (`settings/site-variation/list`): the country name is in its language; `null` or omitted — the default variation.
+
+Response 200, `data`:
+- `code` (string): ISO 3166-1 alpha-2 country code in upper case, e.g. `RU`: pass it as `country`.
+- `name` (string): Country name in the requested language, e.g. `Russia`.
+- `source` (string: `coordinates` | `ip` | `default`): What gave the country: `coordinates` — `latitude` and `longitude`; `ip` — the IP of the device (an app key, or a customer or guest token received with it); `default` — the main country of the site, when nothing else gave a country the site delivers to.
+
+Errors:
+- 400: `/api/problems/bad-request`
+- 401: `/api/problems/unauthorized`
+- 422: `/api/problems/validation-error`, `/api/problems/site-variation-unknown`
 - 429: `/api/problems/too-many-requests`
 
 ### List delivery countries
@@ -3018,7 +3108,7 @@ Errors:
 
 `POST /v2/order/create` · `order_create` · token: site (`X-Auth-Token`)
 
-Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; an offer whose supplier does not pass stock (`quantity: 99` in `stock/*`) is not limited; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same body returns the order already created with status 200 and `replayed: true`; a different body gives 409 `/api/problems/external-id-conflict`. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; a site owner not allowed to place orders on the site gives 403 `/api/problems/owner-not-allowed`.
+Places an order on behalf of the partner (the site owner) and returns it with `deposit_due`, the amount `order/pay` will charge. Prices may not be lower than the site prices (422 `/api/problems/price-below-site-price`); the quantity of a line may not exceed the stock of the product on the site (422, `pointer` to the quantity): products are not bought to order; an offer whose supplier does not pass stock (`quantity: 99` in `stock/*`) is not limited; `pick_up_point_id` must be a pick-up point of the delivery method; `currency` must be one the site has for the recipient country (422 `#/currency`). Use the same `country`, `recipient.city_id` (KLADR) and `pick_up_point_id` as in `delivery/calculate`: the delivery is charged as it showed. No passport is needed to place the order: when customs need one, the package has `passport_status` and `passport_link` — send the link to the recipient, who fills in the passport. A repeated request with the same `external_id` and the same items (in any order), delivery method, and pick-up point and currency when passed returns the order already created with status 200 and `replayed: true`; a difference in them gives 409 `/api/problems/external-id-conflict`, the recipient is not compared. A canceled order does not hold its `external_id`: the same `external_id` places a new order. Business rule violations give 422 with the reason in `detail`, its own `type` where the client may act on it and `pointer` to the value of the body; a site owner not allowed to place orders on the site gives 403 `/api/problems/owner-not-allowed`.
 
 Body:
 - `recipient` (object, required): Recipient and delivery address.
@@ -3046,7 +3136,7 @@ Body:
 - `external_id` (string or null, length ≤ 512): Order id in the partner system, makes the request safe to retry after a timeout. A repeated request with the id of a live (not canceled) order and the same items, `delivery_method_id`, `pick_up_point_id` and `currency` returns that order with status 200 and `replayed: true`; a different body gives 409 `/api/problems/external-id-conflict`. The recipient is not compared. An empty or blank value is the same as no id: the order is created without it and is never replayed.
 - `currency` (string: `RUB` | `USD` | `EUR` or null): Order currency: `RUB`, `USD` or `EUR` that the site sells in for the recipient country; by default the primary currency of the site for it. Another currency gives 422 `#/currency` with the allowed ones, before anything is saved.
 
-Response 201, `data`:
+Response 200, `data`:
 - `order` (object): The order: placed by this request or, when `replayed`, by an earlier one with the same `external_id`.
 - `order.id` (integer): Order id (O).
 - `order.source` (string: `partner` | `customer`): Who placed the order.
@@ -3079,12 +3169,12 @@ Response 201, `data`:
 - `order.packages[].items` (array of object): Items of the package.
 - `order.packages[].passport_status` (string or null): Passport of the recipient required by customs: `missing` — not filled, `pending` — under review, `confirmed`, `problem` — rejected, fill in again; `null` — the delivery method needs no passport.
 - `order.packages[].passport_link` (string or null): Link to the passport form: send it to the recipient, who fills in the passport; `null` — no passport is needed now.
-- `replayed` (boolean): `true` — the request repeats an earlier one with the same `external_id` and the same body: no new order is placed, the earlier order is returned with status 200 (a new order gives 201).
+- `replayed` (boolean): `true` — the request repeats an earlier one with the same `external_id`, items, delivery method, pick-up point and currency (the recipient is not compared): no new order is placed, the earlier order is returned with status 200 (a new order gives 201).
 
 Errors:
 - 400: `/api/problems/bad-request`
 - 401: `/api/problems/unauthorized`
-- 403: `/api/problems/forbidden`, `/api/problems/subscription-expired`, `/api/problems/owner-not-allowed`, `/api/problems/site-token-required`
+- 403: `/api/problems/forbidden`, `/api/problems/owner-not-allowed`, `/api/problems/site-token-required`
 - 409: `/api/problems/external-id-conflict`
 - 422: `/api/problems/validation-error`, `/api/problems/business-rule`, `/api/problems/price-below-site-price`, `/api/problems/pick-up-point-required`, `/api/problems/delivery-unavailable`, `/api/problems/country-not-delivered`, `/api/problems/variation-unavailable`, `/api/problems/delivery-method-not-on-site`, `/api/problems/pick-up-not-supported`
 - 429: `/api/problems/too-many-requests`
@@ -3451,7 +3541,7 @@ A customer of the site signs in (with the site token) and resets the password; t
 
 `POST /v2/customer-auth/confirm` · `customer_auth_confirm` · token: site (`X-Auth-Token`)
 
-Exchanges `confirmation_id` and the code from the SMS or the email for the customer tokens. A new phone or email is registered. An email that is linked to an existing customer but not confirmed there (for example set by `customer-account/profile/update`) does not sign in to that customer: 422, sign in with its password or phone. A wrong code gives 401, too many wrong codes give 422, then 429 `sign-in-locked`.
+Exchanges `confirmation_id` and the code from the SMS or the email for the customer tokens. A new phone or email is registered. An email that is linked to an existing customer but not confirmed there (for example set by `customer-account/profile/update`) does not sign in to that customer: 422, sign in with its password or phone. A wrong code gives 401. Every attempt counts: 5 attempts within 15 minutes for one email or phone, the 6th gives 429 `sign-in-locked` until the window ends, even with the right code; a code checked 5 times stops working (422) until a new one is sent.
 
 Body:
 - `confirmation_id` (string, required): `confirmation_id` from `customer-auth/sign-in` (`phone:123`) or `customer-auth/sign-up` (`email:` and 32 hex characters); the email one works only with the code of its own sign-up.
@@ -3461,7 +3551,7 @@ Body:
 Response 200, `data`:
 - `token` (string): Customer token for `X-Customer-Auth-Token`: valid for `expires_in` seconds.
 - `expires_in` (integer): Seconds the customer token is valid; then get a new one with `customer-auth/refresh`.
-- `refresh_token` (string): One-time token for `customer-auth/refresh` and `customer-auth/sign-out`: keep it secret, on the server side of the site.
+- `refresh_token` (string): One-time token for `customer-auth/refresh` and `customer-auth/sign-out`: keep it secret: on your server for a server integration, in the secure storage of the device (Keychain, Keystore) for an app; never log it.
 - `refresh_expires_in` (integer): Seconds the refresh token is valid; then the customer signs in again.
 
 Errors:
@@ -3475,13 +3565,13 @@ Errors:
 
 `POST /v2/customer-auth/guest` · `customer_auth_guest` · token: site (`X-Auth-Token`)
 
-A token for a customer without an account (an app before sign-in): in `X-Customer-Auth-Token` it opens only `customer-cart/show` and `customer-cart/item/*`, other customer operations give 403 `customer-token-required`. The cart lives as long as the token, 90 days; renew it before with `guest_token`, the new token keeps the cart. To place an order the guest signs in or up with a code — `customer-auth/sign-in` by `phone` (SMS) or `customer-auth/sign-up` by `email` (the password is optional), then `customer-auth/confirm` with `guest_token`: the guest cart moves to the customer. A code is required because an order on an unconfirmed phone or email would show the order to the owner of that phone or email.
+A token for a customer without an account (an app before sign-in): in `X-Customer-Auth-Token` it opens the cart, checkout, addresses and orders (`customer-cart/*`, `customer-account/address/*`, `customer-order/create`, `list`, `show`); the profile, password and order cancel give 403 `customer-token-required` — the guest signs in to cancel. A guest places an order without signing in: the order lives on a hidden guest account tied to this token only, never to an existing customer with the same phone or email, and the guest sees it while the token lives. No order emails are sent to a guest; SMS goes to the phone of the delivery address. The token lives 90 days; renew it before with `guest_token`, the new token keeps the cart and orders. When the guest signs in or up with `guest_token` (`customer-auth/sign-in` by email and password, or `customer-auth/confirm`), the cart, orders and addresses move to the customer and the guest token stops working. With an app key, one IP may start checkout for 20 new guests and place 10 guest orders an hour (429).
 
 Body:
 - `guest_token` (string or null, length ≤ 2000): Current guest token to renew: the new token keeps its cart. Leave it out for a new guest with an empty cart.
 
 Response 200, `data`:
-- `token` (string): Guest token for `X-Customer-Auth-Token`: opens `customer-cart/show` and `customer-cart/item/*`, valid for `expires_in` seconds. Pass it as `guest_token` to `customer-auth/confirm` (after `sign-in` by phone or `sign-up`) or to `customer-auth/sign-in` by email and password to keep the cart.
+- `token` (string): Guest token for `X-Customer-Auth-Token`: opens `customer-cart/*`, `customer-account/address/*`, `customer-order/create`, `list` and `show`, valid for `expires_in` seconds. Pass it as `guest_token` to `customer-auth/confirm` (after `sign-in` by phone or `sign-up`) or to `customer-auth/sign-in` by email and password to keep the cart.
 - `expires_in` (integer): Seconds the guest token is valid; renew it before with `customer-auth/guest` and the guest token.
 
 Errors:
@@ -3522,7 +3612,7 @@ Body:
 Response 200, `data`:
 - `token` (string): Customer token for `X-Customer-Auth-Token`: valid for `expires_in` seconds.
 - `expires_in` (integer): Seconds the customer token is valid; then get a new one with `customer-auth/refresh`.
-- `refresh_token` (string): One-time token for `customer-auth/refresh` and `customer-auth/sign-out`: keep it secret, on the server side of the site.
+- `refresh_token` (string): One-time token for `customer-auth/refresh` and `customer-auth/sign-out`: keep it secret: on your server for a server integration, in the secure storage of the device (Keychain, Keystore) for an app; never log it.
 - `refresh_expires_in` (integer): Seconds the refresh token is valid; then the customer signs in again.
 
 Errors:
@@ -3536,7 +3626,7 @@ Errors:
 
 `POST /v2/customer-auth/sign-in` · `customer_auth_sign_in` · token: site (`X-Auth-Token`)
 
-By `phone` an SMS code is sent and `confirmation_id` is returned: finish with `customer-auth/confirm`. By `email` and `password` of a registered customer the tokens are returned at once; a new customer registers with `customer-auth/sign-up`. An unknown email, a disabled customer and a wrong password give the same 401. After 5 attempts for an email without a success within 15 minutes sign-in by it is locked: 429 `sign-in-locked` with `Retry-After`; after 300 failed sign-ins and codes through one site token within 15 minutes — for every customer of that token.
+By `phone` an SMS code is sent and `confirmation_id` is returned: finish with `customer-auth/confirm`. SMS go only to phones with the country code +7 and only if the site allows sign-in by phone: otherwise 422 on `phone` — sign such a customer in by email. By `email` and `password` of a registered customer the tokens are returned at once; a new customer registers with `customer-auth/sign-up`. An unknown email, a disabled customer and a wrong password give the same 401. After 5 attempts for an email without a success within 15 minutes sign-in by it is locked: 429 `sign-in-locked` with `Retry-After`; after 300 failed sign-ins and codes through one site token within 15 minutes — for every customer of that token.
 
 Body:
 - `phone` (string or null, pattern `^(\+?\d{10,15})$`): Phone with the country code, digits only, e.g. `79001234567`: an SMS code is sent.
@@ -3559,6 +3649,7 @@ Errors:
 - 403: `/api/problems/site-token-required`, `/api/problems/forbidden`
 - 422: `/api/problems/validation-error`, `/api/problems/business-rule`
 - 429: `/api/problems/sign-in-locked`, `/api/problems/too-many-requests`
+- 502: `/api/problems/code-not-sent`
 
 ### Sign a customer out
 
@@ -3583,7 +3674,7 @@ Errors:
 
 `POST /v2/customer-auth/sign-up` · `customer_auth_sign_up` · token: site (`X-Auth-Token`)
 
-Sends a code to the email and returns a one-time `confirmation_id` (`email:` and 32 hex characters): the customer is created with the password of this sign-up (or without a password, then they sign in by a code) by `customer-auth/confirm` with the code from the email. Every sign-up gets its own `confirmation_id`, and only it sets its password: another sign-up with the same email sends a new code but does not change the password of this one. The answer is the same whether the email is registered or not; for a registered email the code signs the customer in and the password stays as it was. A new code for the same email — not earlier than in a minute (422).
+Sends a code to the email and returns a one-time `confirmation_id` (`email:` and 32 hex characters): the customer is created with the password of this sign-up (or without a password, then they sign in by a code) by `customer-auth/confirm` with the code from the email. Every sign-up gets its own `confirmation_id`, and only it sets its password: another sign-up with the same email sends a new code but does not change the password of this one. The answer is the same whether the email is registered or not; for a registered email the code signs the customer in and the password stays as it was. A new code for the same email — not earlier than in 55 seconds (422); `code_lifetime` of the answer gives the wait.
 
 Body:
 - `email` (string, required, length ≤ 255): Email of the new customer: the code to confirm it is sent there.
@@ -3600,6 +3691,7 @@ Errors:
 - 403: `/api/problems/site-token-required`, `/api/problems/forbidden`
 - 422: `/api/problems/validation-error`, `/api/problems/business-rule`
 - 429: `/api/problems/sign-in-locked`, `/api/problems/too-many-requests`
+- 502: `/api/problems/code-not-sent`
 
 ## Customer Account
 
@@ -3624,7 +3716,7 @@ Body:
 - `address.region` (string or null, length ≤ 255): Region (state, province) outside Russia, as text; in Russia it comes from KLADR.
 - `address.flat` (string or null, length ≤ 32): Flat.
 - `address.middle_name` (string or null, length ≤ 100): Recipient middle name.
-- `address.email` (string or null): Recipient email; omitted — the email of the customer. The checkout skips addresses without an email.
+- `address.email` (string or null): Recipient email; omitted — the email of the customer. Required for a guest and a customer without an email: the checkout skips addresses without one.
 - `address.note` (string or null, length ≤ 1000): Note for the courier.
 - `address.zip` (string or null, length ≤ 16): Postal code; omitted on update — stays as it is.
 
@@ -3710,7 +3802,7 @@ Errors:
 
 `POST /v2/customer-account/address/update` · `customer_account_address_update` · token: customer (`X-Customer-Auth-Token`)
 
-Replaces all fields of the address. An address of another customer gives 404.
+Replaces the address: a field left out becomes empty, except `zip`, which stays as it is. An address of another customer gives 404.
 
 Body:
 - `address_id` (integer, required, 1..2147483647): Address id.
@@ -3726,7 +3818,7 @@ Body:
 - `address.region` (string or null, length ≤ 255): Region (state, province) outside Russia, as text; in Russia it comes from KLADR.
 - `address.flat` (string or null, length ≤ 32): Flat.
 - `address.middle_name` (string or null, length ≤ 100): Recipient middle name.
-- `address.email` (string or null): Recipient email; omitted — the email of the customer. The checkout skips addresses without an email.
+- `address.email` (string or null): Recipient email; omitted — the email of the customer. Required for a guest and a customer without an email: the checkout skips addresses without one.
 - `address.note` (string or null, length ≤ 1000): Note for the courier.
 - `address.zip` (string or null, length ≤ 16): Postal code; omitted on update — stays as it is.
 
@@ -3768,7 +3860,7 @@ Body:
 Response 200, `data`:
 - `token` (string): Customer token for `X-Customer-Auth-Token`: valid for `expires_in` seconds.
 - `expires_in` (integer): Seconds the customer token is valid; then get a new one with `customer-auth/refresh`.
-- `refresh_token` (string): One-time token for `customer-auth/refresh` and `customer-auth/sign-out`: keep it secret, on the server side of the site.
+- `refresh_token` (string): One-time token for `customer-auth/refresh` and `customer-auth/sign-out`: keep it secret: on your server for a server integration, in the secure storage of the device (Keychain, Keystore) for an app; never log it.
 - `refresh_expires_in` (integer): Seconds the refresh token is valid; then the customer signs in again.
 
 Errors:
@@ -3934,7 +4026,7 @@ Errors:
 
 `POST /v2/customer-cart/checkout/update` · `customer_cart_checkout_update` · token: customer (`X-Customer-Auth-Token`)
 
-Saves the address, payment method and the delivery method (with the pick-up point) of one package; omitted fields stay. Every value is checked against the current checkout: an unknown package — 404 on `package_id`; a method the package does not have — 422 on `delivery_method_id`; a point not in `customer-cart/pick-up-point/list` of the method or a point for a courier method — 422 on `pick_up_point_id`; a payment method not in `payment_methods` — 422 on `payment_method_id`; an address of another customer — 404 on `address_id`. The address is saved first: packages and methods depend on it. The order notifications go to the email of the address (the email of the customer if the address has none): change it with `customer-account/address/update`. Returns the recalculated checkout.
+Saves the address, payment method and the delivery method (with the pick-up point) of one package; omitted fields stay. Every value is checked against the current checkout: an unknown package — 404 on `package_id`; a method the package does not have — 422 on `delivery_method_id`; a point not in `customer-cart/pick-up-point/list` of the method or a point for a courier method — 422 on `pick_up_point_id`; a payment method not in `payment_methods` — 422 on `payment_method_id`; an address of another customer — 404 on `address_id`. The address is saved first: packages and methods depend on it. An address without an email gets the email of the customer; a guest passes it in the address. Order emails go to the email of the customer account (a guest gets none); SMS go to the phone of the address. Returns the recalculated checkout.
 
 Body:
 - `address_id` (integer or null, 1..2147483647): Address id from `customer-account/address/list`; its country becomes the country of delivery and of the prices. Saved first: packages, delivery methods and payment methods depend on it. An address of another customer gives 404.
@@ -4417,7 +4509,7 @@ Errors:
 
 `POST /v2/customer-order/create` · `customer_order_create` · token: customer (`X-Customer-Auth-Token`)
 
-Creates the order from the selected cart items with the saved checkout choice (`customer-cart/checkout/update`) and returns `payment_url`: the payment page of the site for the chosen payment method. Open it for the customer; after the bank the payment page of the site sends the customer to `return_url` (with `order_id` and `payment_status`), without it the customer stays on the site. There is no notification: poll `is_paid` of `customer-order/show`. A failed or abandoned payment is repeated with `payment_url` of `customer-order/show`. No address, a package without delivery, a pick-up point not chosen (`pick-up-point-required`) or an item over its stock give 422.
+Creates the order from the selected cart items with the saved checkout choice (`customer-cart/checkout/update`) and returns `payment_url`: the payment page of the site for the chosen payment method. Open it for the customer; after the bank the payment page of the site sends the customer to `return_url` (with `order_id` and `payment_status`), without it the customer stays on the site. There is no notification: poll `is_paid` of `customer-order/show`. A failed or abandoned payment is repeated with `payment_url` of `customer-order/show`. No address, a package without delivery, a pick-up point not chosen (`pick-up-point-required`) or an item over its stock give 422. Pass `idempotency_key` to repeat safely: a request whose answer was lost, repeated with the same key within a day, returns the same order with `replayed: true`; while the first one is still running the repeat gives 409 `conflict`.
 
 Body:
 - `site_variation` (string or null, length ≤ 50): Site variation code (`settings/site-variation/list`): language, country and currency of prices; the default variation if omitted.
@@ -4425,16 +4517,19 @@ Body:
 - `currency` (string or null): Override of the currency; must be allowed for the country.
 - `locale` (string or null, length 2..5): Override of the language of names, e.g. `ru`.
 - `return_url` (string or null, length ≤ 2000): Where the payment page sends the customer after the bank: a deep link of the app (`myapp://orders`) or an `https` page. `order_id` and `payment_status` (`paid`, `pending` — the bank accepted it, the confirmation is on its way, poll `customer-order/show`; `failed`) are added to its query. Without it the customer stays on the payment page of the site.
+- `idempotency_key` (string or null): Your id of this checkout attempt, 8–64 characters `A-Z a-z 0-9 . _ : -` (a UUID fits). Repeat a request whose answer was lost with the same key: for a day after the order was placed it returns the same order with `replayed: true` instead of placing a second one, without comparing the body. The key belongs to the site and the customer (a guest — to the guest): after the guest signs in, the guest key no longer finds the order, look it up in `customer-order/list`. After the day the same key places a new order: do not repeat an old key automatically, check `customer-order/list` first. A refused request (422) frees the key. A new order needs a new key.
 
 Response 201, `data`:
 - `order_id` (integer): Order id (O).
 - `payment_url` (string): Payment page of the site for the chosen payment method.
+- `replayed` (boolean): `true` — the order was placed earlier with the same `idempotency_key` and is returned again, nothing new was created.
 
 Errors:
 - 400: `/api/problems/bad-request`
 - 401: `/api/problems/unauthorized`
 - 403: `/api/problems/customer-token-required`, `/api/problems/forbidden`
 - 404: `/api/problems/not-found`
+- 409: `/api/problems/conflict`
 - 422: `/api/problems/validation-error`, `/api/problems/business-rule`, `/api/problems/delivery-unavailable`, `/api/problems/site-variation-unknown`, `/api/problems/pick-up-point-required`
 - 429: `/api/problems/too-many-requests`
 

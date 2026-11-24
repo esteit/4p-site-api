@@ -1,7 +1,7 @@
 meta {
   name: Move a rubric
   type: http
-  seq: 9
+  seq: 10
   tags: [
     Rubric
   ]
@@ -15,9 +15,9 @@ post {
 
 body:json {
   {
-    "rubric_id": 0,
-    "parent_id": null,
-    "position": null
+    "rubric_id": {{createdRubricId}},
+    "parent_id": {{rubricId}},
+    "position": 10
   }
 }
 

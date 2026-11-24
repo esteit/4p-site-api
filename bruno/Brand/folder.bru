@@ -1,8 +1,16 @@
 meta {
   name: Brand
-  seq: 5
+  seq: 4
 }
 
 auth {
   mode: inherit
+}
+
+docs {
+  Brands of the site. Run in `seq` order:
+  
+  1. `List brands with products on the site` with `rubricId` → `brandId`, the first brand of the list. `Rubric` requests use it too.
+  2. `Search brands`, `Show a brand`, `Update texts of a brand`. The update example sets only `meta_robots` to `INDEX, FOLLOW`, the value the storefront uses when none is set: put the texts and a locale of your site.
+  3. `Hide a brand on the site` → `List brands hidden on the site` → `Show a brand on the site`: the brand of `brandId` is hidden with its products on the live storefront until the last request shows it again.
 }

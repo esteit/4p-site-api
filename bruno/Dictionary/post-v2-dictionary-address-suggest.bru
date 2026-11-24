@@ -1,0 +1,34 @@
+meta {
+  name: Suggest addresses
+  type: http
+  seq: 4
+  tags: [
+    Dictionary
+  ]
+}
+
+post {
+  url: {{baseUrl}}/v2/dictionary/address/suggest
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": "Москва Тверская 1",
+    "country": "RU",
+    "count": 10
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.timestamp: isDefined
+  res.body.error: isDefined
+  res.body.data: isDefined
+  res.body.meta: isDefined
+}
+
+docs {
+  Addresses for what the customer typed, in the fields of `customer-account/address/create`: in Russia with `city_id` (KLADR of the settlement), elsewhere with `city_name`. Russia, Belarus, Kazakhstan and Uzbekistan get full addresses down to the house and flat; other countries get mostly settlements and streets. `country` must be one the site delivers to (`dictionary/country/list`), else 422 `country-not-delivered`. If the suggestion service fails, the list is empty: let the customer type the address.
+}
