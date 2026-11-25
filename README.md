@@ -440,6 +440,20 @@ counted in Moscow time (UTC+3).
   passed are the same; otherwise it gives 409 `external-id-conflict`. The recipient is not compared. When the order
   with this `external_id` is canceled, a new order is placed. `external_id` is up to 512 bytes and does not expire.
 
+**Deposit.** The API only reads the deposit (`balance/show`, `balance/operation/list`); it is topped up by a bank
+transfer against a bill, in the account of the site owner at https://store.4partners.io:
+
+1. Sign in as the site owner and fill in the company details at https://store.4partners.io/my/company: bills are issued to the company.
+2. At https://store.4partners.io/my/company/bill/list set the amount and the currency (`RUB`, `USD`, `EUR`) and download the bill as PDF.
+3. Pay the bill by bank transfer and mark it as paid in the same list.
+4. 4Partners credits the deposit when the money arrives: the bill becomes paid, and `balance/operation/list` shows the
+   credit with `type: adjustment`. Top up in advance: `order/pay` with too little deposit gives 409
+   `deposit-insufficient` and charges nothing.
+
+You collect payments from your recipients yourself, with your own payment provider; 4Partners gets only `deposit_due`
+from the deposit. Do not take a payment for an order of the site through the payment terminal of 4Partners: such a
+payment marks the order paid at its full price, and `order/pay` then gives 409 `order-already-paid`.
+
 **Assortment and catalog of the site** (server key). `source/store/list` → `source/store-rubric/list` →
 `stock/product/id/list` with `store_id` and `rubric_id` → `product/rubric/link` to rubrics of the site tree
 (`rubric/create`, `rubric/update`, `rubric/move`, `rubric/activate`) → `product/primary-rubric/update`.

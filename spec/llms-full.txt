@@ -3136,7 +3136,7 @@ Body:
 - `external_id` (string or null, length ≤ 512): Order id in the partner system, makes the request safe to retry after a timeout. A repeated request with the id of a live (not canceled) order and the same items, `delivery_method_id`, `pick_up_point_id` and `currency` returns that order with status 200 and `replayed: true`; a different body gives 409 `/api/problems/external-id-conflict`. The recipient is not compared. An empty or blank value is the same as no id: the order is created without it and is never replayed.
 - `currency` (string: `RUB` | `USD` | `EUR` or null): Order currency: `RUB`, `USD` or `EUR` that the site sells in for the recipient country; by default the primary currency of the site for it. Another currency gives 422 `#/currency` with the allowed ones, before anything is saved.
 
-Response 200, `data`:
+Response 201, `data`:
 - `order` (object): The order: placed by this request or, when `replayed`, by an earlier one with the same `external_id`.
 - `order.id` (integer): Order id (O).
 - `order.source` (string: `partner` | `customer`): Who placed the order.

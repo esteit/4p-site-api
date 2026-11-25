@@ -22736,8 +22736,8 @@
           "Order"
         ],
         "responses": {
-          "200": {
-            "description": "A repeat with the same `external_id` and the same items: the order placed earlier, with `replayed: true`.",
+          "201": {
+            "description": "Order resource created",
             "content": {
               "application/json": {
                 "schema": {
@@ -22791,8 +22791,8 @@
             },
             "links": {}
           },
-          "201": {
-            "description": "Order resource created",
+          "200": {
+            "description": "A repeat with the same `external_id` and the same items: the order placed earlier, with `replayed: true`.",
             "content": {
               "application/json": {
                 "schema": {

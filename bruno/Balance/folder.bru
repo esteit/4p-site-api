@@ -6,3 +6,14 @@ meta {
 auth {
   mode: inherit
 }
+
+docs {
+  The deposit of the site owner: `Order / Pay an order from the deposit` charges orders of the site from it. The API only reads it; it is topped up by a bank transfer against a bill, in the account of the site owner at https://store.4partners.io:
+
+  1. Sign in as the site owner and fill in the company details at https://store.4partners.io/my/company: bills are issued to the company.
+  2. At https://store.4partners.io/my/company/bill/list set the amount and the currency (`RUB`, `USD`, `EUR`) and download the bill as PDF.
+  3. Pay the bill by bank transfer and mark it as paid in the same list.
+  4. 4Partners credits the deposit when the money arrives: `Show the deposit` shows the new balance, and `List deposit operations` shows the credit with `type: adjustment`.
+
+  Payments from your recipients go to your own payment provider; 4Partners gets only `deposit_due` from the deposit. Do not take a payment for an order of the site through the payment terminal of 4Partners: such a payment marks the order paid at its full price, and `Pay an order from the deposit` then gives 409 `order-already-paid`.
+}
