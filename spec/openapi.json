@@ -18301,6 +18301,7 @@
                         "id": 2701,
                         "status": null,
                         "tracking": null,
+                        "tracking_url": null,
                         "delivery_method_id": 10008,
                         "delivery_method": "ПВЗ",
                         "pick_up_point_id": 192092,
@@ -19125,6 +19126,7 @@
                           "id": 2701,
                           "status": null,
                           "tracking": null,
+                          "tracking_url": null,
                           "delivery_method_id": 10008,
                           "delivery_method": "ПВЗ",
                           "pick_up_point_id": 192092,
@@ -19550,6 +19552,7 @@
                         "id": 2701,
                         "status": null,
                         "tracking": null,
+                        "tracking_url": null,
                         "delivery_method_id": 10008,
                         "delivery_method": "ПВЗ",
                         "pick_up_point_id": 192092,
@@ -24152,7 +24155,7 @@
           }
         },
         "summary": "Show an order",
-        "description": "An order of the site with packages and items. An unpaid order that is not canceled has `deposit_due`: what `order/pay` would charge from the deposit now, delivery included. A package that needs the passport of the recipient has `passport_status` and `passport_link`: send the link to the recipient, the passport is filled in only by the form. An order of another site gives 404.",
+        "description": "An order of the site with packages and items. An unpaid order that is not canceled has `deposit_due`: what `order/pay` would charge from the deposit now, delivery included. A package that needs the passport of the recipient has `passport_status` and `passport_link`: send the link to the recipient, the passport is filled in only by the form. A sent package has `tracking`, the 4Partners tracking number (`4P…`), and `tracking_url`, the page to track it; both are `null` until the package is sent. An order of another site gives 404.",
         "parameters": [],
         "requestBody": {
           "description": "Request: show an order.",
@@ -42873,6 +42876,7 @@
           "id",
           "status",
           "tracking",
+          "tracking_url",
           "delivery_method_id",
           "delivery_method",
           "pick_up_point_id",
@@ -42898,7 +42902,15 @@
           },
           "tracking": {
             "readOnly": true,
-            "description": "Tracking number, `null` until the package is sent.",
+            "description": "4Partners tracking number (`4P…`), `null` until the package is sent.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tracking_url": {
+            "readOnly": true,
+            "description": "Page to track the package by `tracking`, `null` until the package is sent.",
             "type": [
               "string",
               "null"
@@ -44638,6 +44650,7 @@
           "pick_up_point_id",
           "address",
           "tracking",
+          "tracking_url",
           "status",
           "items",
           "passport_status",
@@ -44676,7 +44689,15 @@
           },
           "tracking": {
             "readOnly": true,
-            "description": "Tracking number, `null` until the package is sent.",
+            "description": "4Partners tracking number (`4P…`), `null` until the package is sent.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tracking_url": {
+            "readOnly": true,
+            "description": "Page to track the package by `tracking`, `null` until the package is sent.",
             "type": [
               "string",
               "null"

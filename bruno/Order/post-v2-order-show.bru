@@ -28,5 +28,5 @@ assert {
 }
 
 docs {
-  An order of the site with packages and items. An unpaid order that is not canceled has `deposit_due`: what `order/pay` would charge from the deposit now, delivery included. A package that needs the passport of the recipient has `passport_status` and `passport_link`: send the link to the recipient, the passport is filled in only by the form. An order of another site gives 404.
+  An order of the site with packages and items. An unpaid order that is not canceled has `deposit_due`: what `order/pay` would charge from the deposit now, delivery included. A package that needs the passport of the recipient has `passport_status` and `passport_link`: send the link to the recipient, the passport is filled in only by the form. A sent package has `tracking`, the 4Partners tracking number (`4P…`), and `tracking_url`, the page to track it; both are `null` until the package is sent. An order of another site gives 404.
 }
